@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>YVY Capital · Back Office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<section class="login" id="vista-login">
+  <form class="login__box" id="form-login" novalidate>
+    <div class="marca"><span class="marca__sim">YVY</span><div><b>YVY CAPITAL</b><small>Back Office</small></div></div>
+    <h1>Acceso del equipo</h1>
+    <p class="sub" id="login-modo"></p>
+    <label for="l-email">Email</label>
+    <input type="email" id="l-email" autocomplete="username">
+    <label for="l-pass">Contraseña</label>
+    <input type="password" id="l-pass" autocomplete="current-password">
+    <p class="err" id="login-err" role="alert"></p>
+    <button class="b b--oro" type="submit">Entrar</button>
+  </form>
+</section>
+
+<!-- PANEL -->
+<div class="app" id="vista-app" hidden>
+  <header class="top">
+    <div class="marca"><span class="marca__sim">YVY</span><div><b>YVY CAPITAL</b><small>Back Office · Solicitudes de inversores</small></div></div>
+    <div class="top__acc">
+      <span class="modo" id="modo"></span>
+      <button class="b b--sec" id="btn-demo" hidden>Cargar datos de ejemplo</button>
+      <button class="b b--sec" id="btn-csv">Exportar CSV</button>
+      <button class="b b--sec" id="btn-salir">Salir</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="kpis" id="kpis"></section>
+
+    <section class="barra-filtros">
+      <label class="sr" for="f-buscar">Buscar</label>
+      <input type="search" id="f-buscar" placeholder="Buscar por nombre, email, teléfono o país">
+      <label class="sr" for="f-estado">Estado</label>
+      <select id="f-estado"><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="contactado">Contactado</option><option value="reunion">Reunión agendada</option><option value="propuesta">Propuesta enviada</option><option value="cerrado">Cerrado</option><option value="descartado">Descartado</option></select>
+      <label class="sr" for="f-reco">Recomendación</label>
+      <select id="f-reco"><option value="">Todas las recomendaciones</option><option value="lote">Lote</option><option value="pozo">Sobre plano</option><option value="terminado">Terminado</option><option value="cartera">Cartera mixta</option></select>
+      <label class="sr" for="f-fuente">Origen</label>
+      <select id="f-fuente"><option value="">Todos los orígenes</option><option value="formulario">Simulador</option><option value="chatbot">Chatbot</option><option value="contacto">Contacto</option></select>
+    </section>
+
+    <div class="grid">
+      <section class="tabla-wrap">
+        <table class="tabla">
+          <thead><tr><th>Inversor</th><th>País</th><th class="num">Capital (USD)</th><th>Riesgo</th><th>Recomendación</th><th class="num">Score</th><th>Estado</th><th>Fecha</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="vacio" id="vacio" hidden>Todavía no hay solicitudes. Cuando un inversor complete el simulador, el chatbot o el formulario de contacto, aparecerá aquí.</p>
+      </section>
+
+      <aside class="detalle" id="detalle">
+        <p class="vacio">Elegí una solicitud para ver el detalle y contactar al inversor.</p>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/db.js"></script>
+<script src="../js/scoring.js"></script>
+<script src="../js/pdf.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
