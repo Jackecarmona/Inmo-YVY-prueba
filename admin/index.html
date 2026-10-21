@@ -12,25 +12,17 @@
 </head>
 <body>
 
-<!-- LOGIN -->
-<section class="login" id="vista-login">
-  <form class="login__box" id="form-login" novalidate>
-    <div class="marca"><span class="marca__sim">YVY</span><div><b>YVY CAPITAL</b><small>Back Office</small></div></div>
-    <h1>Acceso del equipo</h1>
-    <p class="sub" id="login-modo"></p>
-    <label for="l-email">Email</label>
-    <input type="email" id="l-email" autocomplete="username">
-    <label for="l-pass">Contraseña</label>
-    <input type="password" id="l-pass" autocomplete="current-password">
-    <p class="err" id="login-err" role="alert"></p>
-    <button class="b b--oro" type="submit">Entrar</button>
-  </form>
-</section>
-
-<!-- PANEL -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="yvy-logo" viewBox="0 0 48 48">
+    <rect x="1" y="1" width="46" height="46" rx="6" fill="none" stroke="#c6a66b" stroke-width="1.3"/>
+    <path d="M10 30.2 24 13.2l14 17M13.6 30.4 24 18.6l10.4 11.8" fill="none" stroke="#c6a66b" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M9.6 34.2h28.8M13 37.6h22" fill="none" stroke="#c6a66b" stroke-width="1.3" stroke-linecap="round"/>
+  </symbol>
+</defs></svg>
+<!-- PANEL (sin login propio: se entra desde ingresar/) -->
 <div class="app" id="vista-app" hidden>
   <header class="top">
-    <div class="marca"><span class="marca__sim">YVY</span><div><b>YVY CAPITAL</b><small>Back Office · Solicitudes de inversores</small></div></div>
+    <div class="marca"><svg class="marca__sim"><use href="#yvy-logo"/></svg><div><b>YVY CAPITAL</b><small>Back Office · Solicitudes de inversores</small></div></div>
     <div class="top__acc">
       <span class="modo" id="modo"></span>
       <button class="b b--sec" id="btn-demo" hidden>Cargar datos de ejemplo</button>
@@ -39,7 +31,13 @@
     </div>
   </header>
 
-  <main class="main">
+  <nav class="pestanas" role="tablist" aria-label="Secciones del panel">
+    <button type="button" role="tab" aria-selected="true" data-vista="solicitudes">Solicitudes</button>
+    <button type="button" role="tab" aria-selected="false" data-vista="propiedades">Propiedades</button>
+    <button type="button" role="tab" aria-selected="false" data-vista="usuarios">Usuarios</button>
+  </nav>
+
+  <main class="main" id="vista-solicitudes">
     <section class="kpis" id="kpis"></section>
 
     <section class="barra-filtros">
@@ -67,14 +65,88 @@
       </aside>
     </div>
   </main>
+
+  <!-- PROPIEDADES: lo que se publique aquí aparece en la página Propiedades de la web -->
+  <main class="main" id="vista-propiedades" hidden>
+    <div class="cab-seccion">
+      <div><h2>Propiedades</h2><p>Las publicadas aparecen en la web, delante de las 10 residencias de la cartera inicial. Los borradores solo los ve el equipo.</p></div>
+      <button class="b b--oro" type="button" id="btn-nueva-prop">Añadir propiedad</button>
+    </div>
+    <section class="tabla-wrap">
+      <table class="tabla tabla--props">
+        <thead><tr><th>Foto</th><th>Código</th><th>Tipo</th><th>Ubicación</th><th class="num">Superficie</th><th class="num">Precio</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="tb-props"></tbody>
+      </table>
+      <p class="vacio" id="props-vacio" hidden>Todavía no cargaste propiedades. Pulsá «Añadir propiedad».</p>
+    </section>
+    <p class="guardado" id="props-msg" role="status"></p>
+  </main>
+
+  <!-- USUARIOS: quién es cliente y quién es del equipo -->
+  <main class="main" id="vista-usuarios" hidden>
+    <div class="cab-seccion">
+      <div><h2>Usuarios y roles</h2><p>Un «Administrador» entra al Back Office; un «Cliente» ve su área de clientes. Nadie puede cambiarse su propio rol.</p></div>
+    </div>
+    <section class="tabla-wrap">
+      <table class="tabla tabla--props">
+        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th></tr></thead>
+        <tbody id="tb-usuarios"></tbody>
+      </table>
+      <p class="vacio" id="usuarios-vacio" hidden></p>
+    </section>
+    <p class="guardado" id="usuarios-msg" role="status"></p>
+  </main>
 </div>
 
+<dialog class="dlg" id="dlg-prop" aria-labelledby="dlg-prop-t">
+  <form id="form-prop" novalidate>
+    <h2 id="dlg-prop-t">Añadir propiedad</h2>
+    <div class="g2">
+      <label>Código<input name="codigo" maxlength="30" placeholder="Ej. YVY-011"></label>
+      <label>Operación<select name="operacion"><option value="venta">Venta</option><option value="alquiler">Alquiler</option></select></label>
+    </div>
+    <div class="g2">
+      <label>Tipo de inmueble<select name="tipo"><option>Casa</option><option>Departamento</option><option>Dúplex</option><option>Terreno</option><option>Local</option><option>Oficina</option><option>Otro</option></select></label>
+      <label>Condición<select name="condicion"><option value="nuevo">A estrenar</option><option value="usado">Usado</option></select></label>
+    </div>
+    <div class="g3">
+      <label>Superficie (m²)<input name="metros" type="number" min="1" step="0.01" inputmode="decimal"></label>
+      <label>Dormitorios<input name="habitaciones" type="number" min="0" max="50" step="1" inputmode="numeric"></label>
+      <label>Baños<input name="banos" type="number" min="0" max="50" step="1" inputmode="numeric"></label>
+    </div>
+    <div class="g3">
+      <label>Año de construcción<input name="anio" type="number" min="1800" max="2100" step="1" inputmode="numeric"></label>
+      <label>Garaje<select name="garaje"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>Depósito<select name="trastero"><option value="no">No</option><option value="si">Sí</option></select></label>
+    </div>
+    <div class="g2">
+      <label><span id="lbl-precio">Precio</span><input name="precio" type="number" min="0" step="0.01" inputmode="decimal"></label>
+      <label>Moneda<select name="moneda"><option value="USD">Dólares (US$)</option><option value="EUR">Euros (€)</option></select></label>
+    </div>
+    <label>Barrio o zona<input name="ubicacion" maxlength="200" placeholder="Ej. Zona Anfiteatro"></label>
+    <div class="g2">
+      <label>Ciudad<input name="ciudad" maxlength="100" value="San Bernardino"></label>
+      <label>País<input name="pais" maxlength="80" value="Paraguay"></label>
+    </div>
+    <label>Descripción (opcional)<textarea name="descripcion" rows="3" placeholder="Lo que destacarías al inversor. Separá los párrafos con una línea en blanco."></textarea></label>
+    <label>Fotos (hasta 6, la primera es la portada)<input name="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+    <div class="prev" id="prev-fotos"></div>
+    <label>Publicación<select name="estado"><option value="publicada">Publicada en la web</option><option value="borrador">Borrador (solo el equipo)</option></select></label>
+    <p class="err" id="err-prop" role="alert"></p>
+    <div class="acc">
+      <button class="b b--linea" type="button" id="cancelar-prop">Cancelar</button>
+      <button class="b b--oro" type="submit" id="guardar-prop">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/scoring.js"></script>
 <script src="../js/pdf.js"></script>
 <script src="admin.js"></script>
+
 </body>
 </html>

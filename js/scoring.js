@@ -33,7 +33,7 @@ window.YVYScoring = (() => {
     }
   };
 
-  const HORIZON_YEARS = { "1-3": 3, "3-5": 5, "5-10": 8 };
+  const HORIZON_YEARS = { "1-3": 3, "3-5": 5, "5-10": 8, "10+": 10 };
 
   function toUsd(capital, moneda) {
     const rate = (window.YVY_CONFIG && window.YVY_CONFIG.eurUsd) || 1.1;
@@ -81,9 +81,10 @@ window.YVYScoring = (() => {
     const hz = {
       "1-3": { terminado: 12, pozo: 6, cartera: 7, lote: 2 },
       "3-5": { pozo: 12, terminado: 10, cartera: 10, lote: 8 },
-      "5-10": { lote: 12, cartera: 12, pozo: 10, terminado: 9 }
+      "5-10": { lote: 12, cartera: 12, pozo: 10, terminado: 9 },
+      "10+": { lote: 12, cartera: 11, pozo: 8, terminado: 9 }
     }[input.horizonte] || {};
-    for (const k in hz) add(k, hz[k], hz[k] >= 10 ? "Coincide con tu horizonte de " + input.horizonte + " años" : null);
+    for (const k in hz) add(k, hz[k], hz[k] >= 10 ? "Coincide con tu horizonte de " + (input.horizonte === "10+" ? "más de 10" : input.horizonte) + " años" : null);
 
     // 5. Forma de pago (peso 8)
     if (input.financiacion === "cuotas") { add("lote", 8, "Se paga en cuotas sin banco"); add("pozo", 8, "10 % de entrada y cuotas al promotor"); add("cartera", 3); }

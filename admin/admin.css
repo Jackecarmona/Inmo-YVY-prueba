@@ -22,13 +22,16 @@ input, select, textarea { font: inherit; padding: 9px 11px; border: 1px solid va
 .b--mal { background: #fff; color: var(--mal); border-color: #ecc9c4; }
 
 .marca { display: flex; align-items: center; gap: 10px; }
-.marca__sim { width: 38px; height: 38px; border: 1px solid var(--dorado); border-radius: 5px; display: grid; place-items: center; color: var(--dorado); font-family: var(--f-t); font-size: .7rem; font-weight: 700; letter-spacing: .08em; }
+.marca__sim { width: 40px; height: 40px; flex: none; }
+#velo { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
 .marca b { display: block; font-family: var(--f-t); color: var(--dorado); letter-spacing: .08em; }
 .marca small { color: rgba(243, 240, 232, .65); font-size: .74rem; }
 
 /* Login */
-.login { min-height: 100vh; display: grid; place-items: center; background: var(--noche); padding: 16px; }
-.login__box { background: var(--noche-2); color: var(--marfil); width: min(380px, 100%); padding: 30px; border-radius: 8px; display: grid; gap: 8px; }
+.login { min-height: 100vh; display: grid; place-items: center; background: var(--noche); padding: 16px; position: relative; }
+#velo + .login { background: transparent; }
+.login__box { position: relative; z-index: 1; background: rgba(26, 36, 48, .78); backdrop-filter: blur(14px); border: 1px solid rgba(198, 166, 107, .25); color: var(--marfil); width: min(380px, 100%); padding: 30px; border-radius: 4px; display: grid; gap: 8px; }
+.login__box input { background: rgba(243, 240, 232, .05); border-color: rgba(243, 240, 232, .14); color: var(--marfil); }
 .login__box h1 { font-size: 1.3rem; margin-top: 18px; }
 .login__box .sub { color: rgba(243, 240, 232, .65); font-size: .84rem; margin: 0 0 8px; }
 .login__box label { font-size: .8rem; font-weight: 600; margin-top: 6px; }
@@ -85,3 +88,32 @@ input, select, textarea { font: inherit; padding: 9px 11px; border: 1px solid va
 .detalle .acc { display: flex; flex-wrap: wrap; gap: 8px; }
 .detalle label { font-size: .78rem; font-weight: 600; }
 .guardado { font-size: .78rem; color: var(--ok); min-height: 1em; }
+
+/* Pestañas del panel */
+.pestanas { display: flex; gap: 4px; padding: 0 20px; background: var(--noche); border-top: 1px solid rgba(243, 240, 232, .08); }
+.pestanas button { font: inherit; font-weight: 600; background: none; border: 0; color: rgba(243, 240, 232, .6); padding: 12px 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+.pestanas button[aria-selected="true"] { color: var(--dorado); border-bottom-color: var(--dorado); }
+
+/* Propiedades */
+.cab-seccion { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; }
+.cab-seccion h2 { font-size: 1.25rem; }
+.cab-seccion p { color: var(--suave); margin: 4px 0 0; max-width: 70ch; }
+.tabla--props { min-width: 760px; }
+.tabla--props tbody tr { cursor: default; }
+.tabla--props img { width: 64px; height: 46px; object-fit: cover; border-radius: 4px; display: block; }
+.tabla--props select { width: auto; padding: 5px 8px; }
+.sinfoto { display: grid; place-items: center; width: 64px; height: 46px; border-radius: 4px; background: var(--fondo); color: var(--suave); font-size: .7rem; }
+
+.dlg { border: 0; border-radius: 8px; padding: 22px; width: min(600px, 94vw); max-height: 92vh; overflow: auto; color: var(--tinta); }
+.dlg::backdrop { background: rgba(17, 24, 32, .7); }
+.dlg form { display: grid; gap: 12px; }
+.dlg h2 { font-size: 1.15rem; }
+.dlg label { display: grid; gap: 5px; font-size: .78rem; font-weight: 600; }
+.dlg .acc { display: flex; justify-content: flex-end; gap: 8px; }
+.g2, .g3 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 560px) { .g2, .g3 { grid-template-columns: 1fr; } }
+.prev { display: flex; flex-wrap: wrap; gap: 8px; }
+.prev img { width: 76px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid var(--linea); }
+.prev img:first-child { outline: 2px solid var(--dorado); }
+.b:disabled { opacity: .6; cursor: wait; }

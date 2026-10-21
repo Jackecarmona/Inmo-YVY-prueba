@@ -50,7 +50,7 @@ window.YVYPdf = (() => {
     ];
     doc.setFillColor(...MARFIL); doc.rect(M, y - 5, W - 2 * M, 44, "F");
     doc.setFontSize(8); doc.setTextColor(...VERDE); doc.setFont("helvetica", "bold");
-    doc.text("TU PERFIL  ·  " + ev.perfil.toUpperCase(), M + 5, y + 1);
+    doc.text("TU PERFIL  ·  " + ev.perfil.toUpperCase() + (lead.test_puntaje ? "  ·  TEST DE INVERSOR: " + String(lead.test_perfil || "").toUpperCase() + " " + lead.test_puntaje + "/100" : ""), M + 5, y + 1);
     doc.setFontSize(9.5);
     rows.forEach((r, i) => {
       const cx = M + 5 + (i % 2) * 88, cy = y + 10 + Math.floor(i / 2) * 10;

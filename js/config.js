@@ -14,6 +14,9 @@ window.YVY_CONFIG = {
   // Tipo de cambio usado para normalizar el capital a USD
   eurUsd: 1.10,
 
-  // Contraseña SOLO para el modo demo del back office (sin Supabase)
+  // SOLO para el modo demo (sin Supabase): emails del equipo y su contraseña.
+  // Al ingresar con uno de estos emails se abre el panel del equipo; cualquier otro, el de cliente.
+  // Con Supabase, el equipo se define en la tabla "equipo" (ver supabase/schema.sql).
+  demoEquipo: ["admin@yvycapital.com"],
   demoAdminPass: "yvy2026"
 };

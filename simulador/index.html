@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulador · YVY Capital</title>
+<script>document.documentElement.classList.add("js");</script>
+<meta name="description" content="Simulador de inversión con recomendación personalizada e informe en PDF.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-base="../" data-pagina="simulador">
+
+<main>
+  <header class="pagina-cab">
+    <div class="wrap pagina-cab__txt">
+      <p class="migas"><a href="../index.html">Inicio</a> · Simulador</p>
+      <span class="eyebrow">Simulador de inversión</span>
+      <h1>¿Lote o departamento? Te lo decimos con <em>números</em></h1>
+      <p class="lead">No es lo mismo invertir 50.000 € que 300.000 €, ni buscar renta mensual que plusvalía. Nuestro modelo compara tu perfil con cuatro tipos de inversión.</p>
+    </div>
+  </header>
+
+  <section class="banda" id="simulador">
+    <div class="wrap sim">
+      <div>
+        <span class="eyebrow">Cómo funciona</span>
+        <h2 class="h-seccion">Cuatro pasos, una propuesta en PDF</h2>
+        <ol class="sim__pasos">
+          <li>Hacés el test de perfil: cuatro preguntas sobre capital, objetivo, riesgo y plazo.</li>
+          <li>El modelo puntúa cada alternativa de 0 a 100 y elige la más adecuada.</li>
+          <li>Ves dos escenarios de rentabilidad, prudente y optimista, con sus supuestos.</li>
+          <li>Descargás el informe en PDF y un asesor te contacta.</li>
+        </ol>
+      </div>
+
+      <div class="form" id="form-wrap">
+        <!-- Test de perfil: 4 preguntas de a una, análisis y puntaje. Después precarga el formulario. -->
+        <div class="test" id="test">
+          <div class="test__prog" aria-hidden="true"><span id="test-barra"></span></div>
+
+          <section class="test__paso activo" data-t="intro">
+            <span class="eyebrow">Test de inversor · 2 minutos</span>
+            <h3 class="test__grande">Descubrí tu <em>perfil de inversión</em></h3>
+            <p class="form__sub">Cuatro preguntas y te mostramos qué tipo de inversor sos. Después armamos tu propuesta con números y en PDF.</p>
+            <button class="btn btn--oro" type="button" data-test-ir="q1">Comenzar</button>
+            <button class="test__saltar" type="button" id="test-saltar">Prefiero completar el formulario directo</button>
+          </section>
+
+          <section class="test__paso" data-t="q1" hidden>
+            <button class="test__atras" type="button" data-test-atras="intro">‹ Atrás</button>
+            <span class="test__n">Pregunta 1 de 4</span>
+            <h3 class="test__q">¿Cuánto estás pensando invertir?</h3>
+            <div class="test__ops test__ops--num" data-q="capital">
+              <button type="button" data-v="50000" aria-pressed="false">50.000 €</button>
+              <button type="button" data-v="100000" aria-pressed="false">100.000 €</button>
+              <button type="button" data-v="200000" aria-pressed="false">200.000 €</button>
+              <button type="button" data-v="300000" aria-pressed="false">300.000 €+</button>
+            </div>
+          </section>
+
+          <section class="test__paso" data-t="q2" hidden>
+            <button class="test__atras" type="button" data-test-atras="q1">‹ Atrás</button>
+            <span class="test__n">Pregunta 2 de 4</span>
+            <h3 class="test__q">¿Qué buscás principalmente?</h3>
+            <div class="test__ops" data-q="objetivo">
+              <button type="button" data-v="renta" aria-pressed="false">Renta mensual<small>Cobrar alquiler en dólares</small></button>
+              <button type="button" data-v="plusvalia" aria-pressed="false">Crecimiento a largo plazo<small>Que el inmueble se revalorice</small></button>
+              <button type="button" data-v="uso" aria-pressed="false">Usarlo y alquilarlo<small>Disfrutarlo cuando viaje</small></button>
+              <button type="button" data-v="diversificar" aria-pressed="false">Diversificación<small>Sacar capital de mi país</small></button>
+            </div>
+          </section>
+
+          <section class="test__paso" data-t="q3" hidden>
+            <button class="test__atras" type="button" data-test-atras="q2">‹ Atrás</button>
+            <span class="test__n">Pregunta 3 de 4</span>
+            <h3 class="test__q">¿Cuánto riesgo estás dispuesto a asumir?</h3>
+            <p class="test__riesgo" id="test-riesgo-txt" aria-live="polite">Moderado</p>
+            <input type="range" id="test-riesgo" min="0" max="100" step="1" value="50" aria-label="Nivel de riesgo, de bajo a alto">
+            <div class="test__extremos"><span>Bajo</span><span>Alto</span></div>
+            <button class="btn btn--oro" type="button" data-test-ir="q4">Continuar</button>
+          </section>
+
+          <section class="test__paso" data-t="q4" hidden>
+            <button class="test__atras" type="button" data-test-atras="q3">‹ Atrás</button>
+            <span class="test__n">Pregunta 4 de 4</span>
+            <h3 class="test__q">¿Cuánto tiempo querés mantener la inversión?</h3>
+            <div class="test__ops" data-q="horizonte">
+              <button type="button" data-v="1-3" aria-pressed="false">1 a 3 años</button>
+              <button type="button" data-v="3-5" aria-pressed="false">3 a 5 años</button>
+              <button type="button" data-v="5-10" aria-pressed="false">5 a 10 años</button>
+              <button type="button" data-v="10+" aria-pressed="false">Más de 10 años</button>
+            </div>
+          </section>
+
+          <section class="test__paso" data-t="analisis" hidden>
+            <span class="test__n">Un momento</span>
+            <h3 class="test__q">Analizando tu perfil</h3>
+            <div class="test__orbe" aria-hidden="true"></div>
+            <ul class="test__checks" id="test-checks">
+              <li>Analizando capital…<b>✓</b></li>
+              <li>Analizando objetivos…<b>✓</b></li>
+              <li>Analizando riesgo…<b>✓</b></li>
+              <li>Buscando oportunidades…<b>✓</b></li>
+            </ul>
+          </section>
+
+          <section class="test__paso" data-t="resultado" hidden>
+            <span class="test__n">Tu perfil de inversión</span>
+            <div class="test__puntaje"><b id="test-puntaje">0</b><span>/100</span></div>
+            <h3 class="test__perfil" id="test-perfil"></h3>
+            <p class="form__sub" id="test-frase"></p>
+            <div class="test__barras">
+              <div><span>Capital</span><i><em id="tb1"></em></i><b id="tp1">0 %</b></div>
+              <div><span>Riesgo</span><i><em id="tb2"></em></i><b id="tp2">0 %</b></div>
+              <div><span>Horizonte</span><i><em id="tb3"></em></i><b id="tp3">0 %</b></div>
+            </div>
+            <div class="test__fin">
+              <button class="btn btn--oro" type="button" id="test-continuar">Ver mi propuesta con números</button>
+              <button class="test__saltar" type="button" id="test-repetir">Repetir el test</button>
+            </div>
+          </section>
+        </div>
+
+        <form id="form-inversor" novalidate>
+          <div class="form__prog" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
+
+          <fieldset class="paso" data-paso="1">
+            <legend class="sr">Paso 1 de 3</legend>
+            <h3>Tu capital</h3>
+            <p class="form__sub">Paso 1 de 3 · ¿Cuánto querés invertir y desde dónde?</p>
+            <div class="campos">
+              <div class="campo campo--full">
+                <div class="capital">
+                  <output id="capital-out" for="capital">50.000 €</output>
+                  <div class="moneda" role="group" aria-label="Moneda">
+                    <button type="button" data-moneda="EUR" aria-pressed="true">EUR</button>
+                    <button type="button" data-moneda="USD" aria-pressed="false">USD</button>
+                  </div>
+                </div>
+                <label class="sr" for="capital">Capital disponible</label>
+                <input type="range" id="capital" name="capital" min="15000" max="500000" step="5000" value="50000">
+                <div class="rango-marcas"><span>15.000</span><span>150.000</span><span>300.000</span><span>500.000</span></div>
+              </div>
+              <div class="campo">
+                <label for="pais">País de residencia</label>
+                <select id="pais" name="pais">
+                  <option>España</option><option>Argentina</option><option>Brasil</option><option>Uruguay</option>
+                  <option>Chile</option><option>Estados Unidos</option><option>Paraguay</option><option>Otro</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="financiacion">Forma de pago</label>
+                <select id="financiacion" name="financiacion">
+                  <option value="cuotas">Entrada y cuotas</option>
+                  <option value="contado">Contado</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="paso" data-paso="2" hidden>
+            <legend class="sr">Paso 2 de 3</legend>
+            <h3>Tu perfil</h3>
+            <p class="form__sub">Paso 2 de 3 · Objetivo, riesgo y plazo.</p>
+            <div class="campos">
+              <div class="campo campo--full">
+                <span class="label" id="lbl-obj">¿Qué buscás con esta inversión?</span>
+                <div class="opciones" role="radiogroup" aria-labelledby="lbl-obj">
+                  <label class="opcion"><input type="radio" name="objetivo" value="renta" checked><span>Renta mensual<small>Cobrar alquiler en dólares</small></span></label>
+                  <label class="opcion"><input type="radio" name="objetivo" value="plusvalia"><span>Plusvalía<small>Que el inmueble se revalorice</small></span></label>
+                  <label class="opcion"><input type="radio" name="objetivo" value="uso"><span>Uso personal y renta<small>Disfrutarlo y alquilarlo</small></span></label>
+                  <label class="opcion"><input type="radio" name="objetivo" value="diversificar"><span>Diversificar<small>Sacar capital de mi país</small></span></label>
+                </div>
+              </div>
+              <div class="campo campo--full">
+                <span class="label" id="lbl-riesgo">Tolerancia al riesgo</span>
+                <div class="opciones" role="radiogroup" aria-labelledby="lbl-riesgo">
+                  <label class="opcion"><input type="radio" name="riesgo" value="baja"><span>Baja<small>Prefiero algo terminado y seguro</small></span></label>
+                  <label class="opcion"><input type="radio" name="riesgo" value="media" checked><span>Media<small>Acepto esperar una obra</small></span></label>
+                  <label class="opcion"><input type="radio" name="riesgo" value="alta"><span>Alta<small>Busco el mayor potencial</small></span></label>
+                </div>
+              </div>
+              <div class="campo">
+                <label for="horizonte">Horizonte de inversión</label>
+                <select id="horizonte" name="horizonte">
+                  <option value="1-3">1 a 3 años</option>
+                  <option value="3-5" selected>3 a 5 años</option>
+                  <option value="5-10">5 a 10 años</option>
+                  <option value="10+">Más de 10 años</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="experiencia">¿Ya invertiste en inmuebles?</label>
+                <select id="experiencia" name="experiencia">
+                  <option value="no">No, sería la primera vez</option>
+                  <option value="local">Sí, en mi país</option>
+                  <option value="exterior">Sí, en el exterior</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="paso" data-paso="3" hidden>
+            <legend class="sr">Paso 3 de 3</legend>
+            <h3>Tus datos</h3>
+            <p class="form__sub">Paso 3 de 3 · Para enviarte el informe y que un asesor te contacte.</p>
+            <div class="campos">
+              <div class="campo campo--full"><label for="nombre">Nombre y apellido</label><input type="text" id="nombre" name="nombre" autocomplete="name" placeholder="María López"></div>
+              <div class="campo"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" placeholder="maria@email.com"></div>
+              <div class="campo"><label for="telefono">WhatsApp</label><span class="tel"><select id="prefijo" name="prefijo" data-prefijos aria-label="Prefijo del país"></select><input type="tel" id="telefono" name="telefono" autocomplete="tel-national" inputmode="tel" placeholder="600 000 000"></span></div>
+              <div class="trampa" aria-hidden="true"><label for="web">No completar este campo</label><input type="text" id="web" name="web" tabindex="-1" autocomplete="off"></div>
+              <div class="campo campo--full"><label for="mensaje">¿Algo más que debamos saber? (opcional)</label><textarea id="mensaje" name="mensaje" rows="2" placeholder="Por ejemplo: me interesa viajar a ver los proyectos en enero."></textarea></div>
+              <label class="check campo--full"><input type="checkbox" id="consentimiento" name="consentimiento"><span>Acepto que YVY Capital guarde mis datos para preparar mi propuesta y contactarme.</span></label>
+            </div>
+          </fieldset>
+
+          <p class="error" id="form-error" role="alert"></p>
+          <div class="form__nav">
+            <button type="button" class="btn btn--linea" id="btn-atras" hidden>Atrás</button>
+            <span></span>
+            <button type="button" class="btn btn--noche" id="btn-sig">Siguiente</button>
+            <button type="submit" class="btn btn--oro" id="btn-enviar" hidden>Ver mi recomendación</button>
+          </div>
+        </form>
+
+        <div class="res" id="resultado" hidden></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../js/consentimiento.js"></script>
+<script src="../js/layout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/db.js"></script>
+<script src="../js/scoring.js"></script>
+<script src="../js/pdf.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>

@@ -2,517 +2,174 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YVY Capital · Invertí en Paraguay</title>
-<meta name="description" content="Invertí en Paraguay: lotes en San Bernardino y departamentos sobre plano en Asunción. Simulador con recomendación personalizada e informe en PDF.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YVY Capital</title>
+<script>document.documentElement.classList.add("js");</script>
+<meta name="description" content="Residencias en San Bernardino y proyectos sobre plano en Asunción para inversores de España, Argentina y Brasil.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&display=swap">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="preload" as="image" href="assets/videos/portada-poster.jpg" media="(min-width: 761px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/videos/portada-poster-movil.jpg" media="(max-width: 760px)" fetchpriority="high">
 </head>
-<body>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <!-- Símbolo: horizonte, terreno y proyección de un edificio -->
-    <symbol id="yvy-logo" viewBox="0 0 48 48">
-      <rect x="1" y="1" width="46" height="46" rx="5" fill="none" stroke="#c6a66b" stroke-width="1.4"/>
-      <path d="M9 35h30M13 39.5h22" fill="none" stroke="#c6a66b" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M10 35 21 21l9 11" fill="none" stroke="#c6a66b" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M27 28V11h7v24" fill="none" stroke="#c6a66b" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M30.5 15v3M30.5 21v3" stroke="#c6a66b" stroke-width="1.4" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.7-.3-1.4-.7-2-1.3-.6-.5-1-1.1-1.4-1.8-.1-.2 0-.4.1-.5l.4-.5.3-.4v-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.4-.9 2.2.1 1 .5 1.9 1 2.7 1.1 1.6 2.5 2.9 4.2 3.7.5.2.9.4 1.4.5.5.2 1.1.2 1.6.1.6-.1 1.2-.5 1.5-1 .2-.4.2-.8.1-1.1l-.4-.2Z"/></symbol>
-    <symbol id="i-tg" viewBox="0 0 24 24"><path fill="currentColor" d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9L1.8 12c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4.9Z"/></symbol>
-    <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4V5Z"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8 9.5h8M8 12.5h5"/></symbol>
-  </defs>
-</svg>
-
-<header class="header">
-  <div class="wrap header__in">
-    <a class="logo" href="#inicio" aria-label="YVY Capital, inicio">
-      <svg><use href="#yvy-logo"/></svg>
-      <span><span class="logo__nombre">YVY CAPITAL</span><span class="logo__desc">REAL ESTATE &amp; INVESTMENTS</span></span>
-    </a>
-    <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav">Menú</button>
-    <nav class="nav" id="nav">
-      <a href="#paraguay">Invertir en Paraguay</a>
-      <a href="#proyectos">Proyectos</a>
-      <a href="#legal">Comprar siendo extranjero</a>
-      <a href="#servicios">Nosotros</a>
-      <a href="#faq">Preguntas</a>
-      <a class="btn btn--oro" href="#simulador">Calcular mi inversión</a>
-    </nav>
-  </div>
-</header>
+<body data-base="" data-pagina="inicio" data-intro>
 
 <main id="inicio">
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="wrap hero__grid">
-      <div class="hero__txt">
-        <span class="eyebrow">Paraguay · Real Estate · Investment</span>
-        <h1>La tierra de las grandes <em>oportunidades</em>.</h1>
-        <p class="lead">Lotes en San Bernardino y departamentos sobre plano en Asunción para inversores de España, Argentina y Brasil. Contanos tu capital y tu perfil de riesgo: te devolvemos una propuesta con números en PDF.</p>
-        <div class="hero__ctas">
-          <a class="btn btn--oro" href="#simulador">Calcular mi inversión</a>
-          <a class="btn btn--linea" href="#proyectos">Ver proyectos</a>
-        </div>
-        <div class="hero__dato">
-          <div><strong>10 %</strong><span>de entrada sobre plano</span></div>
-          <div><strong>8–12 %</strong><span>renta temporal estimada en USD</span></div>
-          <div><strong>4 %</strong><span>impuesto efectivo al alquiler</span></div>
-        </div>
+  <!-- PORTADA: vídeo de fondo (assets/videos/), velo oscuro, título y buscador.
+       El vídeo lo elige js/portada.js según pantalla y conexión; sin vídeo queda la imagen poster. -->
+  <section class="hc" id="hc" aria-labelledby="hc-titulo">
+    <div class="hc__media" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 760px)" srcset="assets/videos/portada-poster-movil.jpg">
+        <img class="hc__poster" src="assets/videos/portada-poster.jpg" alt="" width="1920" height="1080" fetchpriority="high" decoding="async">
+      </picture>
+      <video class="hc__video" muted loop playsinline preload="none" disablepictureinpicture
+        data-src="assets/videos/portada.mp4" data-src-movil="assets/videos/portada-movil.mp4"></video>
+    </div>
+    <div class="hc__velo" aria-hidden="true"></div>
+
+    <div class="wrap hc__contenido">
+      <span class="eyebrow">San Bernardino · Asunción · Paraguay</span>
+      <h1 class="hp__titulo hc__titulo" id="hc-titulo" aria-label="La tierra de las grandes oportunidades">
+        <span class="hp__linea"><span>La tierra</span></span>
+        <span class="hp__linea"><span>de las grandes</span></span>
+        <span class="hp__linea"><span><em>oportunidades</em></span></span>
+      </h1>
+      <p class="lead">Residencias frente al Lago Ypacaraí y proyectos sobre plano en Asunción, seleccionados para inversores de España, Argentina y Brasil.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--oro" href="simulador/index.html">Calcular mi inversión</a>
+        <a class="btn btn--linea" href="propiedades/index.html">Ver todas las propiedades</a>
       </div>
-      <div>
-        <div class="collage">
-          <figure><img src="assets/img/sanber-centro.jpg" alt="Vista aérea de San Bernardino a orillas del Lago Ypacaraí"><figcaption>San Bernardino</figcaption></figure>
-          <figure><img src="assets/img/lago-ypacarai.jpg" alt="Lago Ypacaraí con una lancha"><figcaption>Lago Ypacaraí</figcaption></figure>
-          <figure><img src="assets/img/muelle.jpg" alt="Muelle con el cartel de San Bernardino"><figcaption>Muelle de SanBer</figcaption></figure>
+    </div>
+
+    <!-- Buscador: sin JavaScript también funciona (envía los filtros a Propiedades por GET) -->
+    <div class="wrap hc__buscar">
+      <form class="buscador" id="buscador" action="propiedades/index.html" method="get" role="search" aria-label="Buscar propiedades">
+        <fieldset class="buscador__op">
+          <legend class="sr">Operación</legend>
+          <label><input type="radio" name="op" value="venta" checked><span>Comprar</span></label>
+          <label><input type="radio" name="op" value="alquiler"><span>Alquilar</span></label>
+        </fieldset>
+        <div class="buscador__campos">
+          <label class="buscador__campo"><span>Tipo</span>
+            <select name="tipo"><option value="">Todos</option><option>Casa</option><option>Departamento</option><option>Dúplex</option><option>Terreno</option><option>Local</option><option>Oficina</option></select>
+          </label>
+          <label class="buscador__campo"><span>Ubicación</span>
+            <select name="ciudad" id="buscador-ciudad"><option value="">Todas</option><option>San Bernardino</option><option>Asunción</option></select>
+          </label>
+          <label class="buscador__campo"><span>Presupuesto máx.</span>
+            <select name="max" id="buscador-max">
+              <option value="">Sin límite</option><option value="250000">US$ 250.000</option><option value="350000">US$ 350.000</option><option value="500000">US$ 500.000</option><option value="1000000">US$ 1.000.000</option>
+            </select>
+          </label>
+          <label class="buscador__campo"><span>Dormitorios</span>
+            <select name="dorm"><option value="">Indistinto</option><option value="2">2 o más</option><option value="3">3 o más</option><option value="4">4 o más</option></select>
+          </label>
+          <button class="btn btn--oro buscador__btn" type="submit">Buscar</button>
         </div>
-        <p class="hero__geo">A 50 km de Asunción · Departamento de Cordillera</p>
+      </form>
+    </div>
+
+    <button class="hc__pausa" type="button" id="hc-pausa" aria-pressed="false" aria-label="Pausar el vídeo de fondo" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pausa" d="M9 6v12M15 6v12"/><path class="i-play" d="M8 5.5v13l11-6.5z"/></svg>
+    </button>
+  </section>
+
+  <!-- Datos clave, debajo de la portada -->
+  <div class="hp__cinta hp__cinta--suelta" role="region" aria-label="Datos clave">
+    <div class="hp__cinta-in">
+        <span>10 % de entrada sobre plano</span><span>4 % de impuesto efectivo al alquiler</span><span>Libre repatriación de ganancias</span><span>Comprá sin viajar</span><span>Renta temporal 8–12 % en USD</span><span>San Bernardino · Lago Ypacaraí</span>
+        <span aria-hidden="true">10 % de entrada sobre plano</span><span aria-hidden="true">4 % de impuesto efectivo al alquiler</span><span aria-hidden="true">Libre repatriación de ganancias</span><span aria-hidden="true">Comprá sin viajar</span><span aria-hidden="true">Renta temporal 8–12 % en USD</span><span aria-hidden="true">San Bernardino · Lago Ypacaraí</span>
+    </div>
+  </div>
+
+  <!-- DESTACADAS -->
+  <section class="banda">
+    <div class="wrap">
+      <div class="cabecera">
+        <span class="eyebrow">Colección San Bernardino</span>
+        <h2 class="h-seccion">Residencias <em>seleccionadas</em> junto al lago</h2>
+        <p class="lead">Diez casas en la ciudad de verano del Paraguay, cada una con galería, ubicación y números para el inversor.</p>
       </div>
+      <div class="dest-grid" id="destacadas"></div>
+      <div class="seccion-pie"><a class="enlace-oro" href="propiedades/index.html">Ver las 10 residencias <svg><use href="#i-flecha"/></svg></a></div>
     </div>
   </section>
 
-  <!-- POR QUÉ PARAGUAY -->
-  <section class="banda banda--marfil" id="paraguay">
+  <!-- CIFRAS -->
+  <section class="banda banda--marfil">
     <div class="wrap">
       <div class="cabecera">
         <span class="eyebrow">Por qué Paraguay</span>
-        <h2 class="h-seccion">Un mercado en dólares, con impuestos bajos y libre movimiento de capital</h2>
-        <p class="lead">La inflación más baja y estable de la región, libre repatriación de ganancias y un metro cuadrado que todavía está lejos de los precios de Madrid o Buenos Aires.</p>
+        <h2 class="h-seccion">Un mercado en dólares, con impuestos <em>bajos</em></h2>
       </div>
       <div class="cifras">
         <div class="cifra"><strong>1.697 <span class="unidad">US$/m²</span></strong><p>Precio medio en Asunción (marzo 2025), unos 1.471 €/m²</p></div>
-        <div class="cifra"><strong>US$ 5.000</strong><p>Entrada del 10 % para un departamento de US$ 50.000. El resto en cuotas al promotor, sin banco</p></div>
-        <div class="cifra"><strong>6–9 <span class="unidad">%</span></strong><p>Retorno bruto anual del alquiler residencial en dólares</p></div>
+        <div class="cifra"><strong>10 <span class="unidad">%</span></strong><p>De entrada para comprar sobre plano. El resto en cuotas al promotor, sin banco</p></div>
+        <div class="cifra"><strong>4 <span class="unidad">%</span></strong><p>Impuesto efectivo sobre el alquiler (fiscalidad 10-10-10)</p></div>
         <div class="cifra"><strong>+60.000</strong><p>Nuevos residentes al año; 29.765 solo en el primer semestre de 2026</p></div>
       </div>
-      <div class="diez">
-        <div class="diez__num" aria-label="Sistema fiscal 10-10-10">
-          <div><b>10</b><span>Sociedades (IRE)</span></div>
-          <div><b>10</b><span>Renta personal (IRP)</span></div>
-          <div><b>10</b><span>IVA general</span></div>
-        </div>
+      <div class="seccion-pie"><a class="enlace-oro" href="invertir/index.html">Cómo invertir siendo extranjero <svg><use href="#i-flecha"/></svg></a></div>
+    </div>
+  </section>
+
+  <!-- ACCESOS -->
+  <section class="banda">
+    <div class="wrap">
+      <div class="accesos">
+        <a class="acceso" href="proyectos/index.html">
+          <img src="assets/img/urbanizacion.jpg" alt="" loading="lazy">
+          <small>Proyectos a futuro</small>
+          <h3>Sobre plano y lotes</h3>
+          <p>Entrás con el 10 % y pagás en cuotas mientras se construye.</p>
+          <span class="enlace-oro">Ver proyectos <svg><use href="#i-flecha"/></svg></span>
+        </a>
+        <a class="acceso" href="simulador/index.html">
+          <img src="assets/img/lago-costa.jpg" alt="" loading="lazy">
+          <small>Simulador con IA</small>
+          <h3>¿Lote o departamento?</h3>
+          <p>Contanos tu capital y tu perfil: te damos una propuesta en PDF.</p>
+          <span class="enlace-oro">Calcular mi inversión <svg><use href="#i-flecha"/></svg></span>
+        </a>
+        <a class="acceso" href="invertir/index.html">
+          <img src="assets/img/anfiteatro.jpg" alt="" loading="lazy">
+          <small>Guía para extranjeros</small>
+          <h3>Comprar sin viajar</h3>
+          <p>Pasaporte, poder notarial y libre repatriación de ganancias.</p>
+          <span class="enlace-oro">Leer la guía <svg><use href="#i-flecha"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="banda">
+    <div class="wrap">
+      <div class="cta-final">
         <div>
-          <p><strong>Fiscalidad 10-10-10 y territorialidad.</strong> El alquiler paga IRP del 8 % sobre una base presunta del 50 %: en la práctica, un 4 % de lo que cobrás. Sobre 10.000 € de alquiler anual, como residente fiscal en Paraguay pagás 400 € y conservás 9.600 €.</p>
-          <p>Al vender, el impuesto es como máximo un 2,4 % del precio. Y las rentas generadas fuera de Paraguay, en general, no tributan allí (Ley 6380/2019).</p>
+          <span class="eyebrow">Hablá con nosotros</span>
+          <h2 style="margin-top:18px">Agendá una videollamada con un asesor</h2>
+          <p class="lead">Respondemos en el día, estés en Madrid, Buenos Aires o São Paulo.</p>
+        </div>
+        <div class="hero__ctas">
+          <a class="btn btn--oro" href="nosotros/index.html#contacto">Contactar</a>
+          <a class="btn btn--linea" href="ingresar/index.html">Área de clientes</a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- SAN BERNARDINO -->
-  <section class="banda" id="sanber">
-    <div class="wrap sanber">
-      <div>
-        <span class="eyebrow">Destino principal</span>
-        <h2 class="h-seccion">San Bernardino, la ciudad de verano del Paraguay</h2>
-        <p class="lead">SanBer está a orillas del Lago Ypacaraí, a unos 50 km de Asunción. Es una de las apuestas de desarrollo urbano más sólidas de la región, impulsada por un cambio en cómo vive y trabaja la gente y por la estabilidad macroeconómica del país.</p>
-        <ul class="sanber__lista">
-          <li>Demanda de alquiler temporal en verano y fines de semana largos.</li>
-          <li>Urbanizaciones nuevas con seguridad, amenities y acceso al lago.</li>
-          <li>Destino preferido del inversor argentino junto con Asunción: departamentos en pozo y residencias premium.</li>
-        </ul>
-        <div class="videos">
-          <a class="btn btn--linea" href="https://www.youtube.com/watch?v=-VCrPYLjRZo" target="_blank" rel="noopener">▶ Video: San Bernardino</a>
-          <a class="btn btn--linea" href="https://www.youtube.com/watch?v=2VEcTF-mjTg" target="_blank" rel="noopener">▶ Video: el lago desde el aire</a>
-        </div>
-      </div>
-      <div class="galeria">
-        <figure class="ancha"><img src="assets/img/lago-costa.jpg" alt="Costa del lago con edificios y vegetación" loading="lazy"></figure>
-        <figure><img src="assets/img/yo-amo-sanber.jpg" alt="Letras Yo amo SanBer frente al lago" loading="lazy"></figure>
-        <figure><img src="assets/img/anfiteatro.jpg" alt="Anfiteatro de San Bernardino desde el aire" loading="lazy"></figure>
-        <figure><img src="assets/img/avenida.jpg" alt="Avenida arbolada de San Bernardino" loading="lazy"></figure>
-        <figure><img src="assets/img/sanber-ciudad.jpg" alt="Ciudad de San Bernardino junto al lago" loading="lazy"></figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROYECTOS -->
-  <section class="banda banda--marfil" id="proyectos">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Nuestras propiedades</span>
-        <h2 class="h-seccion">Vamos a lo que vinimos: proyectos para invertir</h2>
-        <p class="lead">Cada ficha muestra precio, financiación y números para el inversor, con los supuestos a la vista.</p>
-        <span class="aviso-ficticio">Proyectos y precios de ejemplo (ficticios), creados para esta demostración.</span>
-      </div>
-      <div class="filtros" role="group" aria-label="Filtrar proyectos">
-        <button class="chip" aria-pressed="true" data-filtro="todos">Todos</button>
-        <button class="chip" aria-pressed="false" data-filtro="lote">Lotes</button>
-        <button class="chip" aria-pressed="false" data-filtro="pozo">Sobre plano</button>
-        <button class="chip" aria-pressed="false" data-filtro="terminado">Listos para rentar</button>
-      </div>
-      <div class="proyectos" id="lista-proyectos"></div>
-    </div>
-  </section>
-
-  <!-- SIMULADOR -->
-  <section class="banda banda--noche-2" id="simulador">
-    <div class="wrap sim">
-      <div>
-        <span class="eyebrow">Simulador de inversión</span>
-        <h2 class="h-seccion">¿Lote o departamento? Te lo decimos con números</h2>
-        <p class="lead">No es lo mismo invertir 50.000 € que 300.000 €, ni buscar renta mensual que plusvalía. Nuestro modelo compara tu perfil con cuatro tipos de inversión y calcula un índice de idoneidad para cada uno.</p>
-        <ol class="sim__pasos">
-          <li>Contanos tu capital, tu objetivo y cuánto riesgo aceptás.</li>
-          <li>El modelo puntúa cada alternativa de 0 a 100 y elige la más adecuada.</li>
-          <li>Ves dos escenarios de rentabilidad, prudente y optimista, con sus supuestos.</li>
-          <li>Descargás el informe en PDF y un asesor te contacta.</li>
-        </ol>
-      </div>
-
-      <div class="form" id="form-wrap">
-        <form id="form-inversor" novalidate>
-          <div class="form__prog" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
-
-          <fieldset class="paso" data-paso="1">
-            <legend class="sr">Paso 1 de 3</legend>
-            <h3>Tu capital</h3>
-            <p class="form__sub">Paso 1 de 3 · ¿Cuánto querés invertir y desde dónde?</p>
-            <div class="campos">
-              <div class="campo campo--full">
-                <div class="capital">
-                  <output id="capital-out" for="capital">50.000 €</output>
-                  <div class="moneda" role="group" aria-label="Moneda">
-                    <button type="button" data-moneda="EUR" aria-pressed="true">EUR</button>
-                    <button type="button" data-moneda="USD" aria-pressed="false">USD</button>
-                  </div>
-                </div>
-                <label class="sr" for="capital">Capital disponible</label>
-                <input type="range" id="capital" name="capital" min="15000" max="500000" step="5000" value="50000">
-                <div class="rango-marcas"><span>15.000</span><span>150.000</span><span>300.000</span><span>500.000</span></div>
-              </div>
-              <div class="campo">
-                <label for="pais">País de residencia</label>
-                <select id="pais" name="pais">
-                  <option>España</option><option>Argentina</option><option>Brasil</option><option>Uruguay</option>
-                  <option>Chile</option><option>Estados Unidos</option><option>Paraguay</option><option>Otro</option>
-                </select>
-              </div>
-              <div class="campo">
-                <label for="financiacion">Forma de pago</label>
-                <select id="financiacion" name="financiacion">
-                  <option value="cuotas">Entrada y cuotas</option>
-                  <option value="contado">Contado</option>
-                </select>
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset class="paso" data-paso="2" hidden>
-            <legend class="sr">Paso 2 de 3</legend>
-            <h3>Tu perfil</h3>
-            <p class="form__sub">Paso 2 de 3 · Objetivo, riesgo y plazo.</p>
-            <div class="campos">
-              <div class="campo campo--full">
-                <span class="label" id="lbl-obj">¿Qué buscás con esta inversión?</span>
-                <div class="opciones" role="radiogroup" aria-labelledby="lbl-obj">
-                  <label class="opcion"><input type="radio" name="objetivo" value="renta" checked><span>Renta mensual<small>Cobrar alquiler en dólares</small></span></label>
-                  <label class="opcion"><input type="radio" name="objetivo" value="plusvalia"><span>Plusvalía<small>Que el inmueble se revalorice</small></span></label>
-                  <label class="opcion"><input type="radio" name="objetivo" value="uso"><span>Uso personal y renta<small>Disfrutarlo y alquilarlo</small></span></label>
-                  <label class="opcion"><input type="radio" name="objetivo" value="diversificar"><span>Diversificar<small>Sacar capital de mi país</small></span></label>
-                </div>
-              </div>
-              <div class="campo campo--full">
-                <span class="label" id="lbl-riesgo">Tolerancia al riesgo</span>
-                <div class="opciones" role="radiogroup" aria-labelledby="lbl-riesgo">
-                  <label class="opcion"><input type="radio" name="riesgo" value="baja"><span>Baja<small>Prefiero algo terminado y seguro</small></span></label>
-                  <label class="opcion"><input type="radio" name="riesgo" value="media" checked><span>Media<small>Acepto esperar una obra</small></span></label>
-                  <label class="opcion"><input type="radio" name="riesgo" value="alta"><span>Alta<small>Busco el mayor potencial</small></span></label>
-                </div>
-              </div>
-              <div class="campo">
-                <label for="horizonte">Horizonte de inversión</label>
-                <select id="horizonte" name="horizonte">
-                  <option value="1-3">1 a 3 años</option>
-                  <option value="3-5" selected>3 a 5 años</option>
-                  <option value="5-10">5 a 10 años</option>
-                </select>
-              </div>
-              <div class="campo">
-                <label for="experiencia">¿Ya invertiste en inmuebles?</label>
-                <select id="experiencia" name="experiencia">
-                  <option value="no">No, sería la primera vez</option>
-                  <option value="local">Sí, en mi país</option>
-                  <option value="exterior">Sí, en el exterior</option>
-                </select>
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset class="paso" data-paso="3" hidden>
-            <legend class="sr">Paso 3 de 3</legend>
-            <h3>Tus datos</h3>
-            <p class="form__sub">Paso 3 de 3 · Para enviarte el informe y que un asesor te contacte.</p>
-            <div class="campos">
-              <div class="campo campo--full"><label for="nombre">Nombre y apellido</label><input type="text" id="nombre" name="nombre" autocomplete="name" placeholder="María López"></div>
-              <div class="campo"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" placeholder="maria@email.com"></div>
-              <div class="campo"><label for="telefono">WhatsApp</label><input type="tel" id="telefono" name="telefono" autocomplete="tel" placeholder="+34 600 000 000"></div>
-              <div class="campo campo--full"><label for="mensaje">¿Algo más que debamos saber? (opcional)</label><textarea id="mensaje" name="mensaje" rows="2" placeholder="Por ejemplo: me interesa viajar a ver los proyectos en enero."></textarea></div>
-              <label class="check campo--full"><input type="checkbox" id="consentimiento" name="consentimiento"><span>Acepto que YVY Capital guarde mis datos para preparar mi propuesta y contactarme.</span></label>
-            </div>
-          </fieldset>
-
-          <p class="error" id="form-error" role="alert"></p>
-          <div class="form__nav">
-            <button type="button" class="btn btn--linea" id="btn-atras" hidden>Atrás</button>
-            <span></span>
-            <button type="button" class="btn btn--noche" id="btn-sig">Siguiente</button>
-            <button type="submit" class="btn btn--oro" id="btn-enviar" hidden>Ver mi recomendación</button>
-          </div>
-        </form>
-
-        <div class="res" id="resultado" hidden></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- LEGAL -->
-  <section class="banda" id="legal">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Asesoría legal y notarial</span>
-        <h2 class="h-seccion">Comprar en Paraguay siendo extranjero</h2>
-        <p class="lead">La Constitución Nacional garantiza que un extranjero pueda comprar y escriturar a su nombre, sin residencia permanente ni cédula paraguaya. Te acompañamos en cada trámite.</p>
-      </div>
-      <div class="legal">
-        <div><h3>Documentación</h3><p>Solo pasaporte vigente o el documento de identidad de tu país (por ejemplo, el DNI argentino).</p></div>
-        <div><h3>Sin viajar</h3><p>Podés comprar a distancia con un poder notarial apostillado y legalizado.</p></div>
-        <div><h3>Origen de fondos</h3><p>Hay que demostrar el origen lícito del dinero, sobre todo en transferencias internacionales o montos altos.</p></div>
-        <div><h3>Zonas de frontera</h3><p>Ciudadanos de países limítrofes necesitan autorización especial para inmuebles rurales a menos de 50 km de la frontera. No aplica a San Bernardino ni Asunción.</p></div>
-        <div><h3>Mismos impuestos</h3><p>Los extranjeros pagan los mismos tributos que los paraguayos. Si alquilás, tramitamos tu RUC y cuenta bancaria.</p></div>
-        <div><h3>Costos de compra</h3><p>Escribanía, tasas e inscripción: entre 3 % y 4 % del valor. IVA en propiedades nuevas: 10 %. Impuesto inmobiliario anual: menos del 0,2 %.</p></div>
-      </div>
-      <p class="fuente">Fuente de referencia: Guía Paso a Paso de Inmovia. Información orientativa: cada caso se revisa con nuestra asesora legal.</p>
-    </div>
-  </section>
-
-  <!-- PERFILES POR PAÍS -->
-  <section class="banda banda--marfil" id="perfiles">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Guía por país</span>
-        <h2 class="h-seccion">Lo que cambia según desde dónde invertís</h2>
-      </div>
-      <div class="tabs" role="tablist" aria-label="País del inversor">
-        <button class="tab" role="tab" id="tab-es" aria-selected="true" aria-controls="p-es">España</button>
-        <button class="tab" role="tab" id="tab-ar" aria-selected="false" aria-controls="p-ar">Argentina</button>
-        <button class="tab" role="tab" id="tab-br" aria-selected="false" aria-controls="p-br">Brasil</button>
-        <button class="tab" role="tab" id="tab-cmp" aria-selected="false" aria-controls="p-cmp">Comparativa</button>
-      </div>
-
-      <div class="panel-pais" role="tabpanel" id="p-es" aria-labelledby="tab-es">
-        <div>
-          <h3>Tenés un piso en Paraguay: cómo tributa si residís en España</h3>
-          <p>Tu residencia fiscal decide dónde tributás. España grava la renta mundial de sus residentes; Paraguay es territorial y solo grava lo generado dentro del país.</p>
-          <ul>
-            <li>El convenio de doble imposición España–Paraguay está en vigor desde el 14 de octubre de 2024: pagás la diferencia, no la suma.</li>
-            <li>El modelo 720 es informativo, no tiene cuota. Declarar un inmueble en el extranjero es un trámite; ocultarlo es un problema.</li>
-            <li>Si seguís siendo residente en España, el alquiler va a la base general del IRPF (≈19 % a ≈47 %).</li>
-            <li>Contratá un asesor fiscal antes de comprar, no después.</li>
-          </ul>
-        </div>
-        <div class="ejemplo">
-          <h4>Ejemplo: 10.000 € de alquiler al año</h4>
-          <table>
-            <tr><td>Residente fiscal en Paraguay (IRP 4 %)</td><td>9.600 €</td></tr>
-            <tr><td>Residente en España, tipo marginal bajo</td><td>≈ 8.100 €</td></tr>
-            <tr><td>Residente en España, tipo marginal alto</td><td>≈ 5.300 €</td></tr>
-          </table>
-          <p class="nota">Entre 1.500 € y 4.300 € al año de diferencia por cada 10.000 € de alquiler.</p>
-        </div>
-      </div>
-
-      <div class="panel-pais" role="tabpanel" id="p-ar" aria-labelledby="tab-ar" hidden>
-        <div>
-          <h3>Inversor argentino: proteger el capital en dólares</h3>
-          <p>Paraguay opera sus bienes raíces en dólares, sin riesgo de devaluación y con libre entrada y salida de divisas: las ganancias se envían al exterior sin cepos ni retenciones.</p>
-          <ul>
-            <li>Estrategia típica: comprar en pozo para ganar plusvalía y luego cobrar renta dolarizada.</li>
-            <li>El m² sigue siendo competitivo frente a los barrios premium de Buenos Aires, con vacancia muy baja.</li>
-            <li>Sin impuestos patrimoniales agresivos como Bienes Personales.</li>
-            <li>Destinos preferidos: Asunción y San Bernardino.</li>
-          </ul>
-        </div>
-        <div class="ejemplo">
-          <h4>Costos de transacción</h4>
-          <table>
-            <tr><td>Escribanía y transferencia</td><td>2–3 %</td></tr>
-            <tr><td>Impuesto inmobiliario anual</td><td>&lt; 0,2 %</td></tr>
-            <tr><td>Renta bruta residencial</td><td>6–9 % USD</td></tr>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel-pais" role="tabpanel" id="p-br" aria-labelledby="tab-br" hidden>
-        <div>
-          <h3>Inversor brasileño: flujo de caja y diversificación</h3>
-          <p>El inversor brasileño busca maximizar rentabilidad y diversificar fuera de Brasil, aprovechando la estabilidad del guaraní y costos operativos más bajos.</p>
-          <ul>
-            <li>Efecto frontera: miles de estudiantes de medicina brasileños generan demanda constante de alquiler de clase media.</li>
-            <li>Ley de Maquila: inmuebles comerciales e industriales con energía e impuestos más baratos.</li>
-            <li>Mano de obra y cargas sociales menores que en los principales estados de Brasil.</li>
-            <li>Destinos preferidos: Ciudad del Este, Pedro Juan Caballero y zonas del agronegocio.</li>
-          </ul>
-        </div>
-        <div class="ejemplo">
-          <h4>Moneda de operación</h4>
-          <table>
-            <tr><td>Operaciones inmobiliarias</td><td>PYG o USD</td></tr>
-            <tr><td>Estrategia típica</td><td>Renta inmediata</td></tr>
-            <tr><td>IVA e IRP</td><td>10 %</td></tr>
-          </table>
-        </div>
-      </div>
-
-      <div role="tabpanel" id="p-cmp" aria-labelledby="tab-cmp" hidden>
-        <div class="tabla-scroll">
-          <table class="comparativa">
-            <thead><tr><th>Factor clave</th><th>Inversor argentino</th><th>Inversor brasileño</th></tr></thead>
-            <tbody>
-              <tr><th>Motivación</th><td>Proteger el capital ante la volatilidad cambiaria</td><td>Maximizar rentabilidad y diversificar</td></tr>
-              <tr><th>Moneda</th><td>Dólar estadounidense, sin riesgo de devaluación</td><td>Guaraní o dólar, aprovechando su estabilidad</td></tr>
-              <tr><th>Destino preferido</th><td>Asunción y San Bernardino</td><td>Ciudad del Este, Pedro Juan Caballero, agronegocio</td></tr>
-              <tr><th>Estrategia</th><td>Comprar en pozo, plusvalía y renta dolarizada</td><td>Inmuebles comerciales o residenciales con flujo inmediato</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICIOS Y EQUIPO -->
-  <section class="banda" id="servicios">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Nuestros servicios</span>
-        <h2 class="h-seccion">Te acompañamos desde la primera consulta hasta la firma</h2>
-      </div>
-      <div class="servicios">
-        <div class="servicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg>
-          <h3>Búsqueda de propiedades</h3>
-          <p>Locales y para inversión extranjera. Analizamos el mercado y buscamos la mejor opción según tus gustos.</p>
-        </div>
-        <div class="servicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg>
-          <h3>Asesoría legal</h3>
-          <p>Te facilitamos la documentación, las citas y la presentación hasta concretar la compra o inversión.</p>
-        </div>
-        <div class="servicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="13" height="11" rx="1"/><path d="m16 9 5-3v10l-5-3"/></svg>
-          <h3>Consultas virtuales y presenciales</h3>
-          <p>Priorizamos tus tiempos y necesidades, estés en Madrid, Buenos Aires o São Paulo.</p>
-        </div>
-        <div class="servicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
-          <h3>Gestión de compra e inversión</h3>
-          <p>Seguimiento de la obra, gestión del alquiler y reportes periódicos de rentabilidad.</p>
-        </div>
-      </div>
-
-      <div class="equipo" aria-label="Equipo">
-        <div class="persona"><div class="persona__ini">AL</div><div><h4>Asesora legal</h4><p>Acompaña a cada inversor desde la primera consulta. Gestión de ventas.</p></div></div>
-        <div class="persona"><div class="persona__ini">MK</div><div><h4>Gerente de marketing</h4><p>Dirige el marketing y abre nuevos mercados.</p></div></div>
-        <div class="persona"><div class="persona__ini">GV</div><div><h4>Gerente de ventas</h4><p>Analista de producto e inversiones. Gestión de ventas.</p></div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="banda banda--marfil" id="faq">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Preguntas frecuentes</span>
-        <h2 class="h-seccion">Lo que todo inversor pregunta primero</h2>
-      </div>
-      <div class="faq">
-        <details open>
-          <summary>¿Por qué invertir en San Bernardino?</summary>
-          <p>Es una de las apuestas de desarrollo urbano más sólidas de la región, impulsada por un cambio estructural en el comportamiento del consumidor y por la estabilidad macroeconómica de Paraguay. Combina demanda de alquiler temporal con plusvalía de los lotes cercanos al lago.</p>
-        </details>
-        <details>
-          <summary>¿Puedo comprar siendo extranjero?</summary>
-          <p>Sí. Solo necesitás pasaporte o documento de identidad, y no hace falta viajar: se puede firmar con un poder notarial apostillado. Paraguay tiene libertad cambiaria: libre ingreso de capitales y libre repatriación de ganancias. Te asesoramos para que gestiones todo a través de YVY Capital.</p>
-        </details>
-        <details>
-          <summary>Después de impuestos, ¿cuánto me quedo?</summary>
-          <p>Con la fiscalidad 10-10-10, el alquiler paga un 4 % efectivo si sos residente fiscal en Paraguay. Tus rentas del exterior, en general, no tributan allí. Si residís en España u otro país, aplican sus reglas y el convenio de doble imposición correspondiente.</p>
-        </details>
-        <details>
-          <summary>¿Cómo funciona la compra sobre plano?</summary>
-          <p>Pagás un 10 % de entrada y el resto en cuotas al promotor durante la obra, sin banco. Al entregarse, el departamento suele valer más que el precio de compra y empieza a generar renta.</p>
-        </details>
-        <details>
-          <summary>¿Pagaré impuestos dos veces por el mismo alquiler?</summary>
-          <p>No. Para residentes en España, el convenio vigente desde octubre de 2024 permite deducir lo pagado en Paraguay: pagás la diferencia entre ambos sistemas, no la suma.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACTO -->
-  <section class="banda" id="contacto">
-    <div class="wrap contacto">
-      <div>
-        <span class="eyebrow">Hablá con nosotros</span>
-        <h2 class="h-seccion">Agendá una consulta o pedí el brochure</h2>
-        <p class="lead">Respondemos en el día por WhatsApp o Telegram. En el grupo privado de Telegram compartimos las oportunidades sobre plano activas.</p>
-        <div class="canales">
-          <a class="canal" id="canal-wa" href="#" target="_blank" rel="noopener"><span><small>WhatsApp</small><b id="wa-num">+595 981 000 000</b></span><svg width="22" height="22"><use href="#i-wa"/></svg></a>
-          <a class="canal" id="canal-tg" href="#" target="_blank" rel="noopener"><span><small>Grupo privado de Telegram</small><b>@yvycapital_demo</b></span><svg width="22" height="22"><use href="#i-tg"/></svg></a>
-          <div class="canal"><span><small>Email</small><b id="mail-txt">contacto@yvycapital.example</b></span></div>
-        </div>
-      </div>
-      <form class="form" id="form-contacto" novalidate>
-        <h3>Pedir información</h3>
-        <p class="form__sub">Te enviamos el brochure y agendamos una videollamada.</p>
-        <div class="campos">
-          <div class="campo campo--full"><label for="c-nombre">Nombre</label><input type="text" id="c-nombre" autocomplete="name"></div>
-          <div class="campo"><label for="c-email">Email</label><input type="email" id="c-email" autocomplete="email"></div>
-          <div class="campo"><label for="c-tel">WhatsApp</label><input type="tel" id="c-tel" autocomplete="tel"></div>
-          <div class="campo campo--full">
-            <label for="c-interes">Me interesa</label>
-            <select id="c-interes"><option>Recibir el brochure</option><option>Agendar una videollamada</option><option>Visitar los proyectos</option><option>Asesoría legal para extranjeros</option></select>
-          </div>
-        </div>
-        <p class="error" id="c-error" role="alert"></p>
-        <button class="btn btn--noche" type="submit" style="margin-top:8px">Enviar</button>
-        <div id="c-ok" hidden></div>
-      </form>
     </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="wrap footer__in">
-    <a class="logo" href="#inicio"><svg><use href="#yvy-logo"/></svg><span><span class="logo__nombre">YVY CAPITAL</span><span class="logo__desc">PARAGUAY · REAL ESTATE · INVESTMENT</span></span></a>
-    <p>Marca, proyectos y precios ficticios con fines de demostración académica. La información fiscal y legal es orientativa y no reemplaza el asesoramiento profesional. Las rentabilidades estimadas no garantizan resultados futuros.</p>
-  </div>
-</footer>
-
-<!-- Botones flotantes y chatbot -->
-<div class="flotantes">
-  <button class="fab fab--bot" id="bot-btn" aria-label="Abrir asistente" aria-expanded="false"><svg><use href="#i-chat"/></svg></button>
-  <a class="fab fab--wa" id="fab-wa" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><svg><use href="#i-wa"/></svg></a>
-</div>
-<div class="chat" id="chat" hidden role="dialog" aria-label="Asistente YVY">
-  <div class="chat__head"><div><b>Asistente YVY</b><small>Te ayudo a encontrar tu inversión</small></div><button id="chat-cerrar" aria-label="Cerrar">×</button></div>
-  <div class="chat__log" id="chat-log" aria-live="polite"></div>
-  <div class="chat__ops" id="chat-ops"></div>
-  <form class="chat__input" id="chat-input" hidden><label class="sr" for="chat-txt">Tu respuesta</label><input type="text" id="chat-txt"><button class="btn btn--noche" type="submit">Enviar</button></form>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/consentimiento.js"></script>
+<script src="js/layout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="js/config.js"></script>
 <script src="js/db.js"></script>
 <script src="js/scoring.js"></script>
-<script src="js/pdf.js"></script>
+<script src="js/propiedades-data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/portada.js"></script>
 </body>
 </html>
