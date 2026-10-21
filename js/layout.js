@@ -83,11 +83,16 @@
   const fondo = `<div class="fondo" aria-hidden="true"><i></i><i></i><i></i></div>`;
 
   body.insertAdjacentHTML("afterbegin", sprite + fondo + (body.dataset.sinMenu === undefined ? header : ""));
-  // Rayos de luz animados en el fondo (WebGL). Se cargan aparte para no frenar el resto de la página.
-  const rayos = document.createElement("script");
-  rayos.src = B + "js/rayos.js";
-  rayos.async = true;
-  document.head.appendChild(rayos);
+  // Rayos de luz animados en el fondo (WebGL) y vídeos de fondo de portada y cabeceras.
+  // Se cargan aparte para no frenar el resto de la página.
+  const cargarScript = archivo => {
+    const s = document.createElement("script");
+    s.src = B + "js/" + archivo;
+    s.async = true;
+    document.head.appendChild(s);
+  };
+  cargarScript("rayos.js");
+  if (document.querySelector("[data-video-fondo]")) cargarScript("video-fondo.js");
 
   // Cabecera de las páginas interiores: el isotipo grande, dibujándose, en lugar de una foto
   const cab = document.querySelector(".pagina-cab");

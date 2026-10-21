@@ -114,6 +114,14 @@
     YVYAlTerminarIntro(() => { hv.classList.add("listo"); ir(0); });
   }
 
+  /* ---------- Precios en la moneda elegida (js/moneda.js) ---------- */
+  // Los elementos con data-precio-usd muestran ese monto convertido; se actualizan al cambiar la moneda.
+  function pintarPrecios(raiz = document) {
+    if (!window.YVYMoneda) return;
+    $$("[data-precio-usd]", raiz).forEach(el => { el.textContent = YVYMoneda.formatear(+el.dataset.precioUsd); });
+  }
+  if (window.YVYMoneda) YVYMoneda.alCambiar(() => pintarPrecios());
+
   /* ---------- Inicio: residencias destacadas ---------- */
   const dest = $("#destacadas");
   if (dest && window.YVY_CASAS) {
@@ -124,9 +132,10 @@
         <span class="dest__txt">
           <small>${esc(c.zona)}</small>
           <b>${esc(c.nombre)}</b>
-          <span>${c.precio ? "US$ " + num(c.precio) : "Consultar precio"} · ${c.construido} m² · ${c.dorm} dormitorios</span>
+          <span>${c.precio ? `<span data-precio-usd="${c.precio}">US$ ${num(c.precio)}</span>` : "Consultar precio"} · ${c.construido} m² · ${c.dorm} dormitorios</span>
         </span>
       </a>`).join("");
+    pintarPrecios(dest);
   }
 
   /* ---------- Proyectos a futuro (ejemplos ficticios) ---------- */
@@ -183,7 +192,7 @@
           </div>
           <div class="ficha__body">
             <div><p class="ficha__loc">${esc(p.loc)}</p><h3>${esc(p.nombre)}</h3></div>
-            <p class="ficha__precio">US$ ${num(p.precio)} <small>· ${p.anticipo >= p.precio ? "contado" : "entrada US$ " + num(p.anticipo)}</small></p>
+            <p class="ficha__precio"><span data-precio-usd="${p.precio}">US$ ${num(p.precio)}</span> <small>· ${p.anticipo >= p.precio ? "contado" : `entrada <span data-precio-usd="${p.anticipo}">US$ ${num(p.anticipo)}</span>`}</small></p>
             <div class="specs">${p.specs.map(s => `<div><b>${s[0]}</b>${s[1]}</div>`).join("")}</div>
             <div class="renta"><span>${p.renta[0]}</span><b>${p.renta[1]}</b></div>
             <details>
@@ -201,9 +210,11 @@
         </article>`).join("");
     }
     pintarProyectos("todos");
+    pintarPrecios(listaProy);
     $$("[data-filtro]").forEach(ch => ch.addEventListener("click", () => {
       $$("[data-filtro]").forEach(c => c.setAttribute("aria-pressed", c === ch));
       pintarProyectos(ch.dataset.filtro);
+      pintarPrecios(listaProy);
     }));
     listaProy.addEventListener("click", e => {
       const b = e.target.closest("[data-simular]");

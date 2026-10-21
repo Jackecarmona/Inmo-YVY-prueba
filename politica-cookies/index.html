@@ -55,6 +55,7 @@
         <table class="escenarios doc-legal__tabla">
           <thead><tr><th>Nombre</th><th>Dónde</th><th>Para qué</th><th>Duración</th></tr></thead>
           <tbody>
+            <tr><td><code>yvy_pref_divisa</code></td><td>localStorage</td><td>Recordar la moneda en la que elegiste ver los precios (euros, reales, pesos…).</td><td>Hasta que retires el consentimiento</td></tr>
             <tr><td><code>yvy_pref_orden</code></td><td>localStorage</td><td>Recordar el orden que elegiste para la lista de propiedades.</td><td>Hasta que retires el consentimiento</td></tr>
             <tr><td><code>yvy_pref_moneda</code></td><td>localStorage</td><td>Recordar la moneda (EUR o USD) que elegiste en el simulador.</td><td>Hasta que retires el consentimiento</td></tr>
             <tr><td><code>yvy_intro</code></td><td>sessionStorage</td><td>No repetir la animación del logo en la misma visita.</td><td>Hasta cerrar la pestaña</td></tr>
@@ -72,6 +73,7 @@
         <li><strong>Google Fonts</strong> (fonts.googleapis.com, fonts.gstatic.com): tipografías Montserrat y Manrope.</li>
         <li><strong>jsDelivr</strong> (cdn.jsdelivr.net): librería de Supabase.</li>
         <li><strong>cdnjs / Cloudflare</strong> (cdnjs.cloudflare.com): librería jsPDF, para el informe en PDF.</li>
+        <li><strong>ExchangeRate-API</strong> (open.er-api.com): tipos de cambio del día para el selector de moneda.</li>
         <li><strong>Supabase</strong>: base de datos, cuentas y fotos de las propiedades, cuando está conectada. [Completar: región del proyecto].</li>
       </ul>
       <p>Los botones de <strong>WhatsApp</strong> y <strong>Telegram</strong> son enlaces: no cargan nada hasta que los pulsás. Al pulsarlos salís a esos servicios, que tienen sus propias políticas.</p>
@@ -90,6 +92,7 @@
 <script src="../js/layout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../js/config.js"></script>
+<script src="../js/moneda.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/scoring.js"></script>
 <script src="../js/app.js"></script>

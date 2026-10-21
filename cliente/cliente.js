@@ -66,7 +66,7 @@
       ? `<div class="cl-favs">${casas.map(x => `
           <a class="cl-fav" href="../propiedades/index.html#${x.id}">
             <img src="../assets/props/${x.id}/01.jpg" alt="${esc(x.nombre)}" loading="lazy">
-            <div><b>${esc(x.nombre)}</b><span>${x.precio ? "US$ " + miles(x.precio) : "Consultar precio"}</span></div>
+            <div><b>${esc(x.nombre)}</b><span>${x.precio ? `<span data-precio-usd="${x.precio}">${window.YVYMoneda ? YVYMoneda.formatear(x.precio) : "US$ " + miles(x.precio)}</span>` : "Consultar precio"}</span></div>
           </a>`).join("")}</div>`
       : `<div class="cl-vacio"><p>Tocá el corazón en cualquier residencia para guardarla acá.</p><a class="btn btn--linea" href="../propiedades/index.html">Ver residencias</a></div>`;
   }

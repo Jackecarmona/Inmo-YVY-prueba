@@ -1122,3 +1122,95 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .light-rays__canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 /* Con los rayos activos, la aurora queda más suave para que la luz sea la protagonista */
 .con-rayos .fondo i { opacity: .32; }
+
+/* ---------- Portada: logo de partículas doradas sobre el vídeo (js/particulas.js) ---------- */
+.hc #particulas { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; }
+.hc { touch-action: pan-y; }
+.hc__contenido, .hc__buscar { position: relative; z-index: 1; }
+.hc__pausa { z-index: 2; }
+/* El texto deja pasar el cursor hacia las partículas; enlaces y botones siguen respondiendo */
+.hc__contenido { pointer-events: none; }
+.hc__contenido a, .hc__contenido button { pointer-events: auto; }
+/* Sombra suave detrás del logo para que el oro se lea sobre el vídeo */
+.hc__velo::before { content: ""; position: absolute; inset: 0; background: radial-gradient(26% 38% at 76% 42%, rgba(17, 24, 32, .62), transparent 72%); }
+.hc__pista { position: absolute; z-index: 1; left: var(--logo-x, 76%); top: var(--logo-y, 70%); right: auto; bottom: auto; transform: translateX(-50%); white-space: nowrap; }
+.hc.listo .hc__pista { animation: subir-centrada 1s ease 2.4s forwards; }
+@keyframes subir-centrada { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (max-width: 899px) {
+  .hc__velo::before { background: radial-gradient(50% 22% at 50% 22%, rgba(17, 24, 32, .6), transparent 75%); }
+  .hc__contenido { padding-top: 250px; }
+}
+@media (prefers-reduced-motion: reduce) { .hc__pista { opacity: 1 !important; animation: none !important; } }
+
+/* ---------- Cabeceras de las páginas interiores con vídeo (js/video-fondo.js) ---------- */
+.vf, .vf__velo { position: absolute; inset: 0; pointer-events: none; }
+.vf { z-index: -2; overflow: hidden; }
+.vf__poster, .vf__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.vf__poster { animation: hc-acercar 18s ease-out both; }
+.vf__video { opacity: 0; transition: opacity 1.4s ease; }
+.con-video .vf__video { opacity: 1; }
+.vf__velo { z-index: -1; background:
+  linear-gradient(90deg, rgba(17, 24, 32, .92) 0%, rgba(17, 24, 32, .72) 45%, rgba(17, 24, 32, .38) 100%),
+  linear-gradient(0deg, rgba(17, 24, 32, 1) 0%, rgba(17, 24, 32, 0) 45%),
+  linear-gradient(180deg, rgba(17, 24, 32, .6) 0%, rgba(17, 24, 32, 0) 30%); }
+/* Con vídeo, la cabecera crece y pasa por debajo del menú, como la portada */
+.pagina-cab[data-video-fondo] { margin-top: -84px; padding-top: calc(84px + clamp(80px, 13vw, 170px)); min-height: min(78svh, 720px); display: flex; flex-direction: column; justify-content: flex-end; }
+.pagina-cab[data-video-fondo]::before, .pagina-cab[data-video-fondo] .pagina-cab__marca { display: none; }
+.pagina-cab[data-video-fondo] h1, .pagina-cab[data-video-fondo] .lead { text-shadow: 0 2px 24px rgba(0, 0, 0, .35); }
+.pagina-cab[data-video-fondo] .lead { color: rgba(243, 240, 232, .86); }
+/* Botón de pausa: mismo diseño que el de la portada */
+.vf__pausa { position: absolute; z-index: 2; right: max(24px, env(safe-area-inset-right, 0px)); bottom: 24px; width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(17, 24, 32, .45); border: 1px solid var(--linea); color: var(--marfil); cursor: pointer; transition: border-color .3s, background .3s; }
+.vf__pausa:hover { border-color: var(--dorado); background: rgba(17, 24, 32, .7); }
+.vf__pausa svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.vf__pausa .i-play { display: none; fill: currentColor; stroke: none; }
+.vf__pausa[aria-pressed="true"] .i-play { display: block; }
+.vf__pausa[aria-pressed="true"] .i-pausa { display: none; }
+.vf__pausa:focus-visible, .hc__pausa:focus-visible { outline: 2px solid var(--dorado-claro); outline-offset: 3px; }
+@media (max-width: 760px) { .pagina-cab[data-video-fondo] { min-height: 70svh; } }
+@media (prefers-reduced-motion: reduce) { .vf__poster { animation: none; } }
+/* En la cabecera con vídeo (flex en columna) el contenido mantiene el ancho normal de la página */
+.pagina-cab[data-video-fondo] > .wrap { width: 100%; }
+/* Un poco más de oscuridad detrás del logo de partículas para que el oro resalte sobre el vídeo */
+.hc__velo::before { background: radial-gradient(24% 40% at 76% 42%, rgba(17, 24, 32, .72), rgba(17, 24, 32, .3) 60%, transparent 80%); }
+
+/* San Bernardino: galería en mosaico que ocupa toda su columna
+   (1 foto grande de 2×2, dos a su lado y una fila inferior de 1 + 2) */
+.sanber { align-items: stretch; }
+.sanber > div:first-child { align-self: center; }
+.galeria { grid-auto-rows: clamp(120px, 11.5vw, 175px); }
+.galeria figure { aspect-ratio: auto; height: 100%; }
+.galeria figure.ancha { grid-column: span 2; grid-row: span 2; }
+.galeria figure:nth-child(5) { grid-column: span 2; }
+.galeria figure::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--linea); pointer-events: none; }
+@media (max-width: 560px) { .galeria { grid-template-columns: 1fr 1fr; grid-auto-rows: 130px; } .galeria figure:nth-child(5) { grid-column: span 2; } }
+
+/* Selector de moneda en la cabecera (js/moneda.js) */
+.moneda-sel { position: relative; display: inline-flex; align-items: center; }
+.moneda-sel select { appearance: none; -webkit-appearance: none; cursor: pointer; font: 600 .7rem var(--f-texto); letter-spacing: .12em;
+  color: var(--dorado-claro); background: rgba(17, 24, 32, .35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M1 1l3.5 3L8 1' fill='none' stroke='%23c6a66b' stroke-width='1.2'/%3E%3C/svg%3E") no-repeat right 9px center;
+  border: 1px solid var(--linea); border-radius: 999px; padding: 7px 24px 7px 12px; transition: border-color .3s; }
+.moneda-sel select:hover { border-color: var(--dorado); }
+.moneda-sel select:focus-visible { outline: 2px solid var(--dorado-claro); outline-offset: 2px; }
+.moneda-sel option { background: var(--noche-2); color: var(--marfil); }
+/* Ficha: precio original debajo del convertido */
+.pr-modal__precio small + small { margin-top: 2px; }
+.header__in .moneda-sel { order: 3; }
+@media (max-width: 1320px) {
+  .header__in .logo { margin-right: auto; }
+  .header__in .moneda-sel { order: 1; }
+  .menu-btn { order: 2; }
+}
+/* Que la barra de la cabecera no comprima el selector */
+.header__in .moneda-sel { flex: none; }
+.moneda-sel select { min-width: 76px; }
+/* Teléfonos: logo, selector de moneda y menú entran en la misma barra */
+@media (max-width: 480px) {
+  .header__in { gap: 10px; }
+  .header__in .logo { gap: 10px; }
+  .header__in .logo svg { width: 38px; height: 38px; }
+  .header__in .logo__nombre { font-size: .95rem; letter-spacing: .1em; }
+  .moneda-sel select { min-width: 62px; padding: 7px 20px 7px 10px; background-position: right 7px center; }
+  .menu-btn { padding-inline: 12px; }
+}
+@media (max-width: 350px) { .header__in .logo > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }

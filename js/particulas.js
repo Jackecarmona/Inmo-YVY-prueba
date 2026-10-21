@@ -18,8 +18,22 @@
   // Dibuja el logo en un lienzo oculto y toma una muestra de sus píxeles como destinos
   function muestrear() {
     const ancho = W >= 900;
-    const lado = Math.min(ancho ? W * 0.3 : W * 0.78, H * (ancho ? 0.62 : 0.5), 460);
-    const cx = ancho ? W * 0.77 : W / 2, cy = ancho ? H * 0.45 : H * 0.3;
+    let lado, cx, cy;
+    // Portada con vídeo y buscador (Inicio): el logo va a la derecha del título, entre la cabecera y el buscador;
+    // en móvil, arriba y centrado, en el espacio que deja libre el título.
+    const buscar = zona.querySelector(".hc__buscar"), cab = 96;
+    if (buscar) {
+      const libre = buscar.offsetTop - cab - 24;
+      lado = ancho ? Math.min(W * 0.27, libre, 400) : Math.min(W * 0.5, 190);
+      cx = ancho ? W * 0.76 : W / 2;
+      cy = ancho ? cab + libre / 2 : cab + 12 + lado / 2;
+    } else {
+      lado = Math.min(ancho ? W * 0.3 : W * 0.78, H * (ancho ? 0.62 : 0.5), 460);
+      cx = ancho ? W * 0.77 : W / 2; cy = ancho ? H * 0.45 : H * 0.3;
+    }
+    // Posición para la pista "Mové el cursor · dispersalo", debajo del logo
+    zona.style.setProperty("--logo-x", cx + "px");
+    zona.style.setProperty("--logo-y", cy + lado / 2 + 18 + "px");
     const off = document.createElement("canvas");
     off.width = Math.ceil(W); off.height = Math.ceil(H);
     const o = off.getContext("2d");

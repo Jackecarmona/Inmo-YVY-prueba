@@ -7,7 +7,7 @@ Marca y proyectos sobre plano son **ficticios** (proyecto de portfolio / demostr
 
 | Página | Archivo | Qué tiene |
 |---|---|---|
-| Inicio | `index.html` | Animación de entrada del logo, portada con vídeo de fondo y buscador de propiedades, destacadas, cifras y accesos |
+| Inicio | `index.html` | Animación de entrada del logo, portada con vídeo, logo de partículas y buscador de propiedades, destacadas, cifras y accesos |
 | Política de cookies | `politica-cookies/index.html` | Qué se guarda en el navegador y para qué (borrador para revisión legal) |
 | Política de privacidad | `privacidad/index.html` | Borrador con los datos que recoge la web; faltan las partes legales |
 | Propiedades | `propiedades/index.html` | Las publicadas desde el Back Office más las 10 residencias iniciales, con filtros, favoritos y ficha (galería, mapa, números). Enlace directo a una ficha: `propiedades/index.html#vista-lago` |
@@ -32,8 +32,11 @@ Inmo-YVY-prueba/
 ├── js/
 │   ├── consentimiento.js Banner y panel de cookies; se carga antes que layout.js
 │   ├── layout.js         Cabecera, pie, fondo, chat e intro del logo (comunes a todas las páginas)
-│   ├── portada.js        Vídeo de fondo y buscador de Inicio
-│   ├── particulas.js     Logo de partículas (portada anterior; hoy no se usa)
+│   ├── portada.js        Título y buscador de Inicio
+│   ├── video-fondo.js    Vídeos de fondo de Inicio y de las cabeceras
+│   ├── moneda.js         Selector de moneda de la cabecera (precios convertidos desde US$)
+│   ├── rayos.js          Fondo de rayos de luz (WebGL, adaptado de React Bits)
+│   ├── particulas.js     Logo de partículas doradas de la portada
 │   ├── config.js         ⚙️ Supabase, WhatsApp, Telegram, email, emails del equipo en modo demo
 │   ├── db.js             Base de datos (Supabase o modo demo) y sesiones
 │   ├── scoring.js        Modelo clasificador de IA: índice de idoneidad 0-100 + escenarios
@@ -124,13 +127,15 @@ e impide que alguien se dé a sí mismo el rol de administrador. Pasos:
 2. Poner su *Project URL* y su clave pública en `js/config.js`.
 3. Probar Ingresar, el Simulador y el Back Office.
 
-## Portada con vídeo
+## Vídeos de fondo y logo de partículas
 
-- `js/portada.js` carga el vídeo **después** de la página. Primero se ve la imagen poster.
+- Inicio y las cabeceras de Propiedades, Proyectos, Invertir, Simulador y Nosotros tienen vídeo (atributo `data-video-fondo`; créditos en `assets/videos/CREDITOS.md`).
+- Sobre el vídeo de Inicio está el logo de partículas doradas (`js/particulas.js`), que el cursor dispersa.
+- `js/video-fondo.js` carga el vídeo **después** de la página. Primero se ve la imagen poster.
 - Pantallas ≤ 760 px: `portada-movil.mp4`. El resto: `portada.mp4`.
 - Con «reducir movimiento», ahorro de datos o conexión 2G/3G no se descarga el vídeo y queda la imagen fija.
 - El vídeo se pausa cuando no se ve y tiene un botón de pausa.
-- Para cambiarlo: reemplazar los archivos de `assets/videos/` con los mismos nombres (ver `CREDITOS.md`).
+- Para cambiar un vídeo: reemplazar sus 4 archivos en `assets/videos/` con los mismos nombres (ver `CREDITOS.md`).
 - El buscador envía los filtros a Propiedades (`propiedades/index.html?op=venta&tipo=Casa&dorm=3`). Funciona aunque no haya JavaScript.
 
 ## Cookies y consentimiento
@@ -155,3 +160,13 @@ e impide que alguien se dé a sí mismo el rol de administrador. Pasos:
   3. Cargarla con `<script type="text/plain" data-consentimiento="analiticas" data-src="https://…">` o con `YVYConsentimiento.cuando("analiticas", fn)`.
      Así no se ejecuta sin permiso.
   4. Actualizar la Política de cookies.
+
+## Selector de moneda
+
+- **Monedas:** en la cabecera se elige entre US$, €, R$, AR$, ₲, $U y CLP$.
+- **Cómo se convierte:** los precios se guardan en dólares (o en euros, si así se cargó la propiedad), y la web los muestra convertidos con «≈». La ficha indica además el precio original y la lista avisa que las operaciones se pactan en US$.
+- **Cotizaciones:** salen de open.er-api.com, que se actualiza a diario. Si el servicio no responde, se usan las de respaldo de `js/config.js` → `tiposDeCambio`, que conviene actualizar de vez en cuando.
+- **Dónde se convierte:** en las tarjetas y fichas de Propiedades, en las destacadas de Inicio, en Proyectos, en los presupuestos del buscador y en los favoritos del área de clientes.
+- **Dónde no:** el Simulador y el PDF siguen en US$/€, porque calculan con esas monedas.
+- **Memoria:** la moneda elegida se recuerda (`yvy_pref_divisa`) solo si el visitante acepta las cookies de preferencias.
+- **Para mostrar un precio convertido en otra parte:** usar `<span data-precio-usd="360000">US$ 360.000</span>`, o `YVYMoneda.formatear(monto)` desde JavaScript.

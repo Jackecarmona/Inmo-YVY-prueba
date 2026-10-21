@@ -9,7 +9,11 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const miles = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  const dinero = (c, n) => c.moneda === "EUR" ? miles(n) + " €" : "US$ " + miles(n);
+  // Precios en la moneda que eligió el visitante (js/moneda.js); sin ese módulo, en su moneda original
+  const M = window.YVYMoneda;
+  const dinero = (c, n) => M ? M.formatear(n, c.moneda || "USD") : c.moneda === "EUR" ? miles(n) + " €" : "US$ " + miles(n);
+  const rango = (c, a, b) => dinero(c, a) + " – " + dinero(c, b).replace(/^≈ /, "");
+  const convertido = c => !!(M && c.precio && M.actual() !== (c.moneda || "USD"));
   const alquiler = c => c.operacion === "alquiler";
   const precioTxt = c => c.precio ? dinero(c, c.precio) + (alquiler(c) ? " /mes" : "") : "Consultar precio";
   const precioUsd = c => (c.moneda === "EUR" ? c.precio * (cfg.eurUsd || 1.1) : c.precio);
@@ -56,7 +60,7 @@
     }
     const b = busqueda, partes = [
       b.op && (b.op === "alquiler" ? "En alquiler" : "En venta"), b.tipo, b.ciudad,
-      b.max && "Hasta US$ " + miles(b.max) + (b.op === "alquiler" ? " / mes" : ""), b.dorm && b.dorm + "+ dormitorios"
+      b.max && "Hasta " + dinero({}, b.max) + (b.op === "alquiler" ? " / mes" : ""), b.dorm && b.dorm + "+ dormitorios"
     ].filter(Boolean);
     barra.innerHTML = `<span>Tu búsqueda:</span> ${partes.map(p => `<b>${esc(p)}</b>`).join("")} <button type="button" class="pr-busqueda__quitar">Quitar búsqueda ×</button>`;
     $(".pr-busqueda__quitar", barra).addEventListener("click", () => {
@@ -88,6 +92,11 @@
     if (orden === "precio-desc") items = [...items].sort((a, b) => (b.precio ? precioUsd(b) : 0) - (a.precio ? precioUsd(a) : 0));
     if (orden === "superficie") items = [...items].sort((a, b) => b.construido - a.construido);
     $("#casas-cuenta").textContent = items.length + (items.length === 1 ? " propiedad" : " propiedades");
+    // Aviso de conversión cuando se ven los precios en otra moneda
+    let notaMoneda = $("#pr-moneda-nota");
+    if (!notaMoneda) { notaMoneda = document.createElement("p"); notaMoneda.id = "pr-moneda-nota"; notaMoneda.className = "pr-fuente"; lista.insertAdjacentElement("afterend", notaMoneda); }
+    notaMoneda.hidden = !M || M.actual() === "USD";
+    if (M) notaMoneda.textContent = M.nota();
     // Tarjetas anchas para que la grilla de 3 columnas cierre sin huecos
     const anchas = (3 - items.length % 3) % 3;
     const esAncha = i => (anchas >= 1 && i === 0) || (anchas === 2 && i === items.length - 1);
@@ -125,6 +134,11 @@
   }
 
   pintarBusqueda();
+  // Al cambiar la moneda (o llegar las cotizaciones del día) se vuelven a pintar los precios
+  if (M) M.alCambiar(() => {
+    pintarBusqueda(); pintar();
+    if (actual && !modal.hidden) abrir(actual.id);
+  });
   // Llegando desde el buscador, se va directo a los resultados
   if (hayBusqueda() && !location.hash) requestAnimationFrame(() => $("#propiedades").scrollIntoView());
   DB.favoritos().then(f => { favs = f; pintar(); }).catch(() => pintar());
@@ -187,15 +201,15 @@
     const fila = (a, b) => `<div><dt>${a}</dt><dd>${b}</dd></div>`;
     $("#pr-modal-titulo").textContent = c.nombre;
     $("#pr-modal-zona").textContent = c.zona + " · " + ciudad(c);
-    $("#pr-modal-precio").innerHTML = precioTxt(c) + (c.precioNota ? `<small>${esc(c.precioNota)}</small>` : "");
+    $("#pr-modal-precio").innerHTML = precioTxt(c) + (convertido(c) ? `<small>Precio: ${M.original(c.precio, c.moneda || "USD")}${alquiler(c) ? " /mes" : ""}</small>` : "") + (c.precioNota ? `<small>${esc(c.precioNota)}</small>` : "");
     const tags = (titulo, items) => items.length ? `<section><h4>${titulo}</h4><ul class="pr-tags">${items.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>` : "";
     const inversor = n ? `<section class="pr-inversor">
         <h4>Para el inversor</h4>
         <div class="pr-inversor__grid">
           <div><span>Precio por m²</span><b>${dinero(c, n.m2)}</b></div>
-          <div><span>Alquiler temporal bruto / año</span><b>${dinero(c, n.rentaAnual[0])} – ${miles(n.rentaAnual[1])}</b></div>
+          <div><span>Alquiler temporal bruto / año</span><b>${rango(c, n.rentaAnual[0], n.rentaAnual[1])}</b></div>
           <div><span>Rentabilidad neta estimada</span><b>${S.pct(n.netoPct[0])} – ${S.pct(n.netoPct[1])}</b></div>
-          <div><span>Gastos de compra (3–4 %)</span><b>${dinero(c, n.gastosCompra[0])} – ${miles(n.gastosCompra[1])}</b></div>
+          <div><span>Gastos de compra (3–4 %)</span><b>${rango(c, n.gastosCompra[0], n.gastosCompra[1])}</b></div>
         </div>
         <p class="pr-nota">Supuestos: alquiler temporal del 5 % (prudente) al 7 % (optimista) del valor por año, gestión del 20 % e IRP efectivo del 4 % del alquiler. Estimación orientativa.</p>
       </section>` : alquiler(c) ? "" : `<section class="pr-inversor"><h4>Para el inversor</h4><p class="pr-nota">El precio se informa a pedido. Te enviamos el análisis de rentabilidad junto con el precio.</p></section>`;
