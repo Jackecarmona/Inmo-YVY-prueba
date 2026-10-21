@@ -12,6 +12,8 @@ window.YVYDB = (() => {
   const BUCKET = "propiedades-fotos";
   let sb = null;
 
+  // ¿Se llegó desde el enlace de "restablecer contraseña"? Se mira antes de que Supabase limpie la dirección
+  const vinoDeRecuperacion = /type=recovery/.test(location.hash + location.search);
   if (cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase) {
     sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
   }
@@ -32,6 +34,32 @@ window.YVYDB = (() => {
     return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
   }
   const aDataUrl = blob => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(blob); });
+  // Mensajes de Supabase Auth traducidos a algo que el visitante entienda
+  function errorAcceso(error, contexto) {
+    const m = String((error && error.message) || ""), status = error && error.status;
+    if (status === 429 || /rate limit|too many|security purposes/i.test(m))
+      return new Error("Se enviaron demasiados emails en poco tiempo. Esperá unos minutos y probá de nuevo, o escribinos por WhatsApp y te ayudamos.");
+    if (/not confirmed|confirm/i.test(m)) {
+      const e = new Error("Todavía no confirmaste tu email. Buscá el enlace que te enviamos (revisá también el correo no deseado).");
+      e.sinConfirmar = true;
+      return e;
+    }
+    if (/already registered|already been registered|user already exists/i.test(m)) return new Error("Ya existe una cuenta con ese email. Ingresá con tu contraseña.");
+    if (/signups? not allowed|signup is disabled/i.test(m)) return new Error("Por ahora no se pueden crear cuentas nuevas. Escribinos y te damos de alta.");
+    if (/password/i.test(m) && /weak|short|least|characters/i.test(m)) return new Error("La contraseña es demasiado débil: usá al menos 8 caracteres, mezclando letras y números.");
+    if (/invalid.*email|email.*invalid/i.test(m)) return new Error("Ese email no es válido. Revisalo y volvé a intentar.");
+    if (/fetch|network|failed to fetch/i.test(m)) return new Error("No pudimos conectar con el servidor. Revisá tu conexión e intentá de nuevo.");
+    if (/different from the old|same password/i.test(m)) return new Error("La nueva contraseña tiene que ser distinta de la anterior.");
+    if (contexto === "cambio" && /session|jwt|expired|token/i.test(m)) return new Error("El enlace venció o ya se usó. Pedí uno nuevo desde «¿Olvidaste tu contraseña?».");
+    return new Error({
+      entrar: "Email o contraseña incorrectos.",
+      cambio: "No pudimos cambiar la contraseña. Pedí un enlace nuevo e intentá otra vez.",
+      olvido: "No pudimos enviar el email. Intentá de nuevo en unos minutos."
+    }[contexto] || "No pudimos completar el registro. Intentá de nuevo en unos minutos.");
+  }
+  // Adónde vuelve el visitante al tocar el enlace del email de confirmación
+  const paginaAcceso = () => new URL((window.YVY_BASE || "") + "ingresar/index.html", location.href).href;
+
   // Equipo = rol "admin" en profiles (o miembro de la tabla equipo); lo decide la base de datos
   async function esEquipo() {
     const { data, error } = await sb.rpc("es_equipo");
@@ -190,7 +218,7 @@ window.YVYDB = (() => {
       email = norm(email);
       if (sb) {
         const { error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw new Error(/confirm/i.test(error.message) ? "Confirmá tu email con el enlace que te enviamos y volvé a intentar." : "Email o contraseña incorrectos.");
+        if (error) throw errorAcceso(error, "entrar");
         return (await esEquipo()) ? "equipo" : "cliente";
       }
       if ((cfg.demoEquipo || []).map(norm).includes(email)) {
@@ -216,11 +244,45 @@ window.YVYDB = (() => {
     },
 
     /* ---------- Clientes (área de clientes) ---------- */
+    /* ---------- Contraseña olvidada ---------- */
+    // Envía el enlace para elegir una contraseña nueva. Por seguridad, Supabase no avisa si el email
+    // no tiene cuenta: la respuesta es la misma en los dos casos.
+    async pedirRestablecer(email) {
+      if (!sb) throw new Error("En el modo demo no se envían emails: creá una cuenta nueva con otro email.");
+      const destino = new URL((window.YVY_BASE || "") + "restablecer/index.html", location.href).href;
+      const { error } = await sb.auth.resetPasswordForEmail(norm(email), { redirectTo: destino });
+      if (error) throw errorAcceso(error, "olvido");
+    },
+
+    // true si esta página se abrió desde el enlace del email y Supabase dio una sesión para cambiar la contraseña
+    async enRecuperacion() {
+      if (!sb) return false;
+      const { data } = await sb.auth.getSession();
+      return !!(data && data.session) && vinoDeRecuperacion;
+    },
+
+    async cambiarContrasena(password) {
+      if (!sb) throw new Error("En el modo demo no se puede cambiar la contraseña.");
+      const { error } = await sb.auth.updateUser({ password });
+      if (error) throw errorAcceso(error, "cambio");
+    },
+
+    // Vuelve a enviar el email de confirmación (Supabase también limita cuántos se envían por hora)
+    async reenviarConfirmacion(email) {
+      if (!sb) return;
+      const { error } = await sb.auth.resend({ type: "signup", email: norm(email), options: { emailRedirectTo: paginaAcceso() } });
+      if (error) throw errorAcceso(error, "registro");
+    },
+
     async clienteRegistrar(nombre, email, password) {
       email = norm(email);
       if (sb) {
-        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { nombre } } });
-        if (error) throw new Error(error.message.includes("registered") ? "Ya existe una cuenta con ese email. Ingresá con tu contraseña." : error.message);
+        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { nombre }, emailRedirectTo: paginaAcceso() } });
+        if (error) throw errorAcceso(error, "registro");
+        // Email ya registrado y confirmado: Supabase no da error (para no revelar qué emails existen),
+        // devuelve un usuario sin identidades y no envía ningún correo
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0)
+          throw new Error("Ya existe una cuenta con ese email. Ingresá con tu contraseña.");
         return { nombre, email, confirmar: !data.session };
       }
       if ((cfg.demoEquipo || []).map(norm).includes(email)) throw new Error("Ese email pertenece al equipo. Usá la pestaña Ingresar.");
@@ -236,7 +298,7 @@ window.YVYDB = (() => {
       email = norm(email);
       if (sb) {
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw new Error(/confirm/i.test(error.message) ? "Confirmá tu email con el enlace que te enviamos y volvé a intentar." : "Email o contraseña incorrectos.");
+        if (error) throw errorAcceso(error, "entrar");
         return { email, nombre: data.user.user_metadata?.nombre || "" };
       }
       const c = leer(CLIENTES, {})[email];

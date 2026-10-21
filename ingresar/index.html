@@ -30,9 +30,21 @@
       <form class="cl-form" id="form-entrar" novalidate>
         <div class="campo"><label for="e-email">Email</label><input type="email" id="e-email" autocomplete="username" placeholder="maria@email.com"></div>
         <div class="campo"><label for="e-pass">Contraseña</label><input type="password" id="e-pass" autocomplete="current-password"></div>
+        <button class="olvido-enlace" type="button" id="btn-olvido">¿Olvidaste tu contraseña?</button>
         <p class="error" id="e-error" role="alert"></p>
         <button class="btn btn--oro" type="submit" id="btn-entrar">Ingresar</button>
         <p class="cl-ayuda">¿Primera vez? Creá tu cuenta con el mismo email que dejaste en el simulador y vas a ver tus propuestas.</p>
+      </form>
+
+      <!-- Contraseña olvidada: se pide el email y Supabase envía el enlace a restablecer/ -->
+      <form class="cl-form" id="form-olvido" novalidate hidden aria-labelledby="olvido-t">
+        <h2 class="olvido-titulo" id="olvido-t" tabindex="-1">Restablecer tu contraseña</h2>
+        <p class="cl-ayuda">Escribí el email de tu cuenta y te enviamos un enlace para elegir una contraseña nueva.</p>
+        <div class="campo"><label for="o-email">Email</label><input type="email" id="o-email" autocomplete="username" placeholder="maria@email.com"></div>
+        <p class="error" id="o-error" role="alert"></p>
+        <p class="ok-msg" id="o-ok" role="status" hidden></p>
+        <button class="btn btn--oro" type="submit" id="btn-olvido-enviar">Enviarme el enlace</button>
+        <button class="olvido-enlace" type="button" id="btn-olvido-volver">‹ Volver a Ingresar</button>
       </form>
 
       <form class="cl-form" id="form-crear" novalidate hidden>

@@ -1227,3 +1227,19 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .chat__head .chat__reiniciar:hover { border-color: var(--dorado); color: var(--dorado-claro); }
 .chat__reiniciar:focus-visible, #chat-cerrar:focus-visible { outline: 2px solid var(--dorado-claro); outline-offset: 2px; }
 @media (max-width: 380px) { .chat__reiniciar span { display: none; } }
+
+/* Ingresar: reenviar el email de confirmación */
+.reenviar { display: block; margin-top: 10px; background: none; border: 0; padding: 0; font: inherit; font-size: .82rem; color: var(--dorado-claro); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.reenviar:disabled { color: var(--texto-tenue); text-decoration: none; cursor: default; }
+.reenviar:focus-visible { outline: 2px solid var(--dorado-claro); outline-offset: 3px; }
+
+/* Ingresar: contraseña olvidada */
+.olvido-enlace { justify-self: start; background: none; border: 0; padding: 0; margin-top: -8px; font: inherit; font-size: .8rem; color: var(--dorado-claro); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.olvido-enlace:hover { color: var(--marfil); }
+.olvido-enlace:focus-visible { outline: 2px solid var(--dorado-claro); outline-offset: 3px; }
+#form-olvido .olvido-enlace { margin-top: 0; }
+.olvido-titulo { font-family: var(--f-titulo); font-weight: 300; font-size: 1.4rem; margin: 0; }
+.olvido-titulo:focus { outline: none; }
+.ok-msg { color: var(--ok); font-size: .9rem; border-left: 2px solid var(--ok); padding-left: 12px; }
+#r-invalido { display: grid; gap: 14px; justify-items: start; }
+#r-invalido[hidden], #r-ok[hidden] { display: none; }

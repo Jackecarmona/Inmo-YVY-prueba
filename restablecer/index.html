@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nueva contraseña · YVY Capital</title>
+<meta name="robots" content="noindex">
+<script>document.documentElement.classList.add("js");</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body data-base="../" data-pagina="restablecer">
+
+<!-- Se llega desde el enlace del email "Restablecer contraseña" (ver ingresar/) -->
+<main>
+  <section class="wrap cl-acceso">
+    <div>
+      <span class="eyebrow">Acceso</span>
+      <h1 class="h-seccion">Elegí una <em>contraseña nueva</em></h1>
+      <p class="lead">Por seguridad, el enlace del email sirve una sola vez y vence en poco tiempo.</p>
+    </div>
+
+    <div class="form">
+      <p class="cl-ayuda" id="r-cargando" role="status">Comprobando el enlace…</p>
+
+      <form class="cl-form" id="form-nueva" novalidate hidden>
+        <div class="campo"><label for="r-pass">Contraseña nueva</label><input type="password" id="r-pass" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
+        <div class="campo"><label for="r-pass2">Repetila</label><input type="password" id="r-pass2" autocomplete="new-password"></div>
+        <p class="error" id="r-error" role="alert"></p>
+        <button class="btn btn--oro" type="submit" id="btn-guardar">Guardar contraseña</button>
+      </form>
+
+      <div id="r-ok" hidden role="status">
+        <p class="ok-msg">Listo, tu contraseña se cambió. Te llevamos a tu cuenta…</p>
+      </div>
+
+      <div id="r-invalido" hidden>
+        <p class="error" id="r-invalido-txt">El enlace venció o ya se usó.</p>
+        <p class="cl-ayuda">Pedí uno nuevo desde «¿Olvidaste tu contraseña?» en la página de ingreso.</p>
+        <a class="btn btn--linea" href="../ingresar/index.html">Ir a Ingresar</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../js/consentimiento.js"></script>
+<script src="../js/layout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/moneda.js"></script>
+<script src="../js/db.js"></script>
+<script src="../js/scoring.js"></script>
+<script src="../js/app.js"></script>
+<script src="restablecer.js"></script>
+</body>
+</html>
