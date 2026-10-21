@@ -44,6 +44,7 @@
             <tr><td><code>sb-[proyecto]-auth-token</code></td><td>localStorage</td><td>Mantener abierta la sesión de clientes y del equipo. Lo crea Supabase, el servicio de base de datos y cuentas, solo cuando está conectado.</td><td>Hasta cerrar sesión</td></tr>
             <tr><td><code>yvy_cliente_demo</code> · <code>yvy_admin_demo</code></td><td>localStorage · sessionStorage</td><td>Sesión en el modo de demostración, sin base de datos.</td><td>Hasta cerrar sesión o la pestaña</td></tr>
             <tr><td><code>yvy_favoritos_[email]</code></td><td>localStorage</td><td>Las casas que guardás como favoritas (en modo demostración; con Supabase se guardan en tu cuenta).</td><td>Hasta que las quites</td></tr>
+            <tr><td><code>yvy_chat</code></td><td>sessionStorage</td><td>Seguir la conversación con el asistente al cambiar de página. Incluye lo que respondiste: país, capital, objetivo, riesgo y, si los dejaste, tu nombre y contacto.</td><td>Hasta cerrar la pestaña, o al pulsar «Reiniciar»</td></tr>
             <tr><td><code>yvy_prefill</code></td><td>localStorage</td><td>Llevar los datos de una ficha, un proyecto o el asistente al simulador.</td><td>Se borra al abrir el simulador</td></tr>
             <tr><td><code>yvy_leads</code> · <code>yvy_clientes_demo</code> · <code>yvy_propiedades_demo</code></td><td>localStorage</td><td>Solo en modo demostración: hacen de base de datos de prueba dentro de tu navegador. Con la base de datos real no se usan.</td><td>Hasta borrar los datos del navegador</td></tr>
           </tbody>
@@ -55,6 +56,7 @@
         <table class="escenarios doc-legal__tabla">
           <thead><tr><th>Nombre</th><th>Dónde</th><th>Para qué</th><th>Duración</th></tr></thead>
           <tbody>
+            <tr><td><code>yvy_chat</code></td><td>localStorage</td><td>Guardar tu conversación con el asistente para retomarla otro día en este navegador.</td><td>30 días, o hasta pulsar «Reiniciar» o retirar el consentimiento</td></tr>
             <tr><td><code>yvy_pref_divisa</code></td><td>localStorage</td><td>Recordar la moneda en la que elegiste ver los precios (euros, reales, pesos…).</td><td>Hasta que retires el consentimiento</td></tr>
             <tr><td><code>yvy_pref_orden</code></td><td>localStorage</td><td>Recordar el orden que elegiste para la lista de propiedades.</td><td>Hasta que retires el consentimiento</td></tr>
             <tr><td><code>yvy_pref_moneda</code></td><td>localStorage</td><td>Recordar la moneda (EUR o USD) que elegiste en el simulador.</td><td>Hasta que retires el consentimiento</td></tr>

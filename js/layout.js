@@ -74,7 +74,7 @@
       <a class="fab fab--wa" id="fab-wa" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><svg><use href="#i-wa"/></svg></a>
     </div>
     <div class="chat" id="chat" hidden role="dialog" aria-label="Asistente YVY">
-      <div class="chat__head"><div><b>Asistente YVY</b><small>Te ayudo a encontrar tu inversión</small></div><button id="chat-cerrar" aria-label="Cerrar">×</button></div>
+      <div class="chat__head"><div><b>Asistente YVY</b><small>Te ayudo a encontrar tu inversión</small></div><div class="chat__acc"><button id="chat-reiniciar" type="button" class="chat__reiniciar" aria-label="Reiniciar conversación" title="Reiniciar conversación"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.3-5.4M4.5 4.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Reiniciar</span></button><button id="chat-cerrar" type="button" aria-label="Cerrar">×</button></div></div>
       <div class="chat__log" id="chat-log" aria-live="polite"></div>
       <div class="chat__ops" id="chat-ops"></div>
       <form class="chat__input" id="chat-input" hidden><label class="sr" for="chat-txt">Tu respuesta</label><input type="text" id="chat-txt"><button class="btn btn--noche" type="submit">Enviar</button></form>

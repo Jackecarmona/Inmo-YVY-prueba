@@ -61,15 +61,53 @@
       </div>`;
     $$("[data-pdf]").forEach(b => b.addEventListener("click", () => window.YVYPdf.download(sols[+b.dataset.pdf])));
 
-    const casas = CASAS.filter(x => favs.includes(x.id));
+    // Favoritos: las casas de la cartera inicial y las publicadas desde el Back Office
+    let todas = CASAS;
+    try {
+      const rows = await DB.propiedades();
+      if (rows.length && window.YVYCasaDesdeDB) todas = [...rows.map(p => YVYCasaDesdeDB(p, r => DB.urlFoto(r))), ...CASAS];
+    } catch (ex) { console.error(ex); }
+    pintarFavs(todas, favs);
+  }
+
+  function pintarFavs(todas, favs) {
+    const casas = todas.filter(x => favs.includes(x.id));
+    const portada = x => (x.imgs ? x.imgs[0] : `../assets/props/${x.id}/01.jpg`);
+    const precio = x => x.precio
+      ? `<span${x.moneda === "EUR" ? "" : ` data-precio-usd="${x.precio}"`}>${window.YVYMoneda ? YVYMoneda.formatear(x.precio, x.moneda || "USD") : "US$ " + miles(x.precio)}</span>`
+      : "Consultar precio";
     $("#lista-favs").innerHTML = casas.length
       ? `<div class="cl-favs">${casas.map(x => `
-          <a class="cl-fav" href="../propiedades/index.html#${x.id}">
-            <img src="../assets/props/${x.id}/01.jpg" alt="${esc(x.nombre)}" loading="lazy">
-            <div><b>${esc(x.nombre)}</b><span>${x.precio ? `<span data-precio-usd="${x.precio}">${window.YVYMoneda ? YVYMoneda.formatear(x.precio) : "US$ " + miles(x.precio)}</span>` : "Consultar precio"}</span></div>
-          </a>`).join("")}</div>`
+          <article class="cl-fav" data-id="${esc(x.id)}">
+            <a class="cl-fav__enlace" href="../propiedades/index.html#${esc(x.id)}">
+              ${portada(x) ? `<img src="${esc(portada(x))}" alt="${esc(x.nombre)}" loading="lazy">` : ""}
+              <div><b>${esc(x.nombre)}</b><span>${precio(x)}</span></div>
+            </a>
+            <button class="cl-fav__quitar" type="button" data-quitar="${esc(x.id)}" aria-label="Quitar ${esc(x.nombre)} de favoritos">Quitar de favoritos</button>
+          </article>`).join("")}</div>`
       : `<div class="cl-vacio"><p>Tocá el corazón en cualquier residencia para guardarla acá.</p><a class="btn btn--linea" href="../propiedades/index.html">Ver residencias</a></div>`;
+    // El contador de favoritos de arriba sigue al listado
+    const kpi = $("#kpis div:nth-child(2) b");
+    if (kpi) kpi.textContent = casas.length;
   }
+
+  // Quitar un favorito desde el área de clientes
+  $("#lista-favs").addEventListener("click", async e => {
+    const b = e.target.closest("[data-quitar]");
+    if (!b) return;
+    b.disabled = true; b.textContent = "Quitando…";
+    try {
+      await DB.alternarFavorito(b.dataset.quitar); // estaba guardado: alternar lo quita
+      const tarjeta = b.closest(".cl-fav"), lista = tarjeta.parentElement;
+      tarjeta.remove();
+      const kpi = $("#kpis div:nth-child(2) b");
+      if (kpi) kpi.textContent = lista.children.length;
+      if (!lista.children.length) $("#lista-favs").innerHTML = `<div class="cl-vacio"><p>Tocá el corazón en cualquier residencia para guardarla acá.</p><a class="btn btn--linea" href="../propiedades/index.html">Ver residencias</a></div>`;
+    } catch (ex) {
+      b.disabled = false; b.textContent = "Quitar de favoritos";
+      alert("No se pudo quitar. Intentá de nuevo.");
+    }
+  });
 
   mostrarPanel();
 })();

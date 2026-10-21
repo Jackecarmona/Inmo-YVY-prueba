@@ -19,12 +19,12 @@ window.YVYConsentimiento = (() => {
   // se sube VERSION y se actualiza la Política de cookies.
   const CATEGORIAS = [
     { id: "necesarias", nombre: "Necesarias", fija: true,
-      desc: "Hacen funcionar la web: recordar tu elección sobre cookies, mantener tu sesión, guardar tus favoritos y pasar los datos de una ficha al simulador. No se pueden desactivar.",
-      items: ["yvy_consentimiento", "sb-…-auth-token", "yvy_cliente_demo · yvy_admin_demo", "yvy_favoritos_…", "yvy_prefill"] },
+      desc: "Hacen funcionar la web: recordar tu elección sobre cookies, mantener tu sesión, guardar tus favoritos, pasar los datos de una ficha al simulador y seguir la conversación con el asistente mientras navegás. No se pueden desactivar.",
+      items: ["yvy_consentimiento", "sb-…-auth-token", "yvy_cliente_demo · yvy_admin_demo", "yvy_favoritos_…", "yvy_prefill", "yvy_chat (durante la visita)"] },
     { id: "preferencias", nombre: "Preferencias",
-      desc: "Recuerdan elecciones tuyas para no repetírtelas: la moneda en la que ves los precios, el orden de la lista de propiedades, la moneda del simulador y que ya viste la animación de entrada en esta visita.",
-      items: ["yvy_pref_divisa", "yvy_pref_orden", "yvy_pref_moneda", "yvy_intro"],
-      borrar: () => { quitar(localStorage, "yvy_pref_divisa"); quitar(localStorage, "yvy_pref_orden"); quitar(localStorage, "yvy_pref_moneda"); quitar(sessionStorage, "yvy_intro"); } },
+      desc: "Recuerdan elecciones tuyas para no repetírtelas: la moneda en la que ves los precios, tu conversación con el asistente para retomarla otro día, el orden de la lista de propiedades, la moneda del simulador y que ya viste la animación de entrada en esta visita.",
+      items: ["yvy_pref_divisa", "yvy_pref_orden", "yvy_pref_moneda", "yvy_intro", "yvy_chat (30 días)"],
+      borrar: () => { quitar(localStorage, "yvy_chat"); quitar(localStorage, "yvy_pref_divisa"); quitar(localStorage, "yvy_pref_orden"); quitar(localStorage, "yvy_pref_moneda"); quitar(sessionStorage, "yvy_intro"); } },
     { id: "analiticas", nombre: "Analíticas",
       desc: "Medirían cómo se usa la web (páginas vistas, clics) para mejorarla.", items: [] },
     { id: "marketing", nombre: "Publicidad y marketing",

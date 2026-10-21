@@ -503,17 +503,52 @@
     $("#c-ok").hidden = false;
   });
 
-  /* ---------- Chatbot de cualificación ---------- */
+  /* ---------- Chatbot de cualificación (con memoria) ---------- */
+  // La conversación se guarda en sessionStorage durante la visita (necesario para seguirla al cambiar de página)
+  // y, si el visitante aceptó las cookies de preferencias, también en localStorage durante 30 días.
   const chat = $("#chat");
   if (chat) {
     const log = $("#chat-log"), ops = $("#chat-ops"), inForm = $("#chat-input"), inTxt = $("#chat-txt"), botBtn = $("#bot-btn");
-    let perfilBot = {}, esperando = null, iniciado = false;
-    const decir = (txt, quien = "bot") => {
+    const CLAVE_CHAT = "yvy_chat", DIAS_CHAT = 30;
+    const prefChat = () => !!(window.YVYConsentimiento && YVYConsentimiento.permite("preferencias"));
+    let estado = null, esperando = null, restaurando = false;
+    const nuevoEstado = () => ({ v: 1, fecha: new Date().toISOString(), mensajes: [], perfil: { fuente: "chatbot", horizonte: "3-5", moneda: "USD", consentimiento: false }, paso: "inicio" });
+
+    const guardarChat = () => {
+      estado.fecha = new Date().toISOString();
+      const txt = JSON.stringify(estado);
+      try { sessionStorage.setItem(CLAVE_CHAT, txt); } catch (e) { /* sin almacenamiento */ }
+      if (prefChat()) { try { localStorage.setItem(CLAVE_CHAT, txt); } catch (e) { /* sin almacenamiento */ } }
+    };
+    const leerChat = () => {
+      const leer = (almacen, caduca) => {
+        try {
+          const e = JSON.parse(almacen.getItem(CLAVE_CHAT));
+          if (!e || e.v !== 1 || !Array.isArray(e.mensajes)) return null;
+          if (caduca && Date.now() - new Date(e.fecha).getTime() > DIAS_CHAT * 864e5) { almacen.removeItem(CLAVE_CHAT); return null; }
+          return e;
+        } catch (err) { return null; }
+      };
+      return leer(sessionStorage, false) || (prefChat() ? leer(localStorage, true) : null);
+    };
+    const borrarChat = () => {
+      try { sessionStorage.removeItem(CLAVE_CHAT); } catch (e) { /* sin almacenamiento */ }
+      try { localStorage.removeItem(CLAVE_CHAT); } catch (e) { /* sin almacenamiento */ }
+    };
+
+    const pintarMensaje = (html, quien) => {
       const m = document.createElement("div");
       m.className = "msg msg--" + quien;
-      m.innerHTML = txt;
+      m.innerHTML = html;
       log.appendChild(m);
       log.scrollTop = log.scrollHeight;
+    };
+    // Al restaurar, los mensajes del bot ya están en el historial: solo se vuelve a mostrar la pregunta
+    const decir = (txt, quien = "bot") => {
+      if (restaurando && quien === "bot") return;
+      pintarMensaje(txt, quien);
+      estado.mensajes.push({ q: quien, t: txt });
+      guardarChat();
     };
     const opciones = lista => {
       inForm.hidden = true;
@@ -525,7 +560,7 @@
         ops.appendChild(b);
       });
     };
-    const pedir = (placeholder, fn) => { ops.innerHTML = ""; inForm.hidden = false; inTxt.value = ""; inTxt.placeholder = placeholder; esperando = fn; inTxt.focus(); };
+    const pedir = (placeholder, fn) => { ops.innerHTML = ""; inForm.hidden = false; inTxt.value = ""; inTxt.placeholder = placeholder; esperando = fn; if (!restaurando) inTxt.focus(); };
     inForm.addEventListener("submit", e => {
       e.preventDefault();
       const v = inTxt.value.trim();
@@ -534,61 +569,98 @@
       const fn = esperando; esperando = null; inForm.hidden = true;
       setTimeout(() => fn(v), 350);
     });
+    // Los enlaces se guardan con dirección completa para que funcionen desde cualquier página
+    const enlace = ruta => new URL(B + ruta, location.href).href;
+
+    const perfil = () => estado.perfil;
+    const ir = paso => { estado.paso = paso; guardarChat(); flujo[paso](); };
     const flujo = {
       inicio() {
-        perfilBot = { fuente: "chatbot", horizonte: "3-5", moneda: "USD", consentimiento: false };
         decir("Hola, soy el asistente de YVY Capital. Con 4 preguntas te digo qué tipo de inversión encaja con vos. ¿Desde dónde invertirías?");
-        opciones(["España", "Argentina", "Brasil", "Otro país"].map(p => [p, () => { perfilBot.pais = p === "Otro país" ? "Otro" : p; flujo.capital(); }]));
+        opciones(["España", "Argentina", "Brasil", "Otro país"].map(p => [p, () => { perfil().pais = p === "Otro país" ? "Otro" : p; ir("capital"); }]));
       },
       capital() {
         decir("¿Qué capital tenés pensado invertir (en dólares)?");
         opciones([["Menos de 50.000", 35000], ["50.000 a 150.000", 100000], ["150.000 a 300.000", 220000], ["Más de 300.000", 400000]]
-          .map(([t, v]) => [t, () => { perfilBot.capital = perfilBot.capital_usd = v; perfilBot.financiacion = v < 150000 ? "cuotas" : "contado"; flujo.objetivo(); }]));
+          .map(([t, v]) => [t, () => { Object.assign(perfil(), { capital: v, capital_usd: v, financiacion: v < 150000 ? "cuotas" : "contado" }); ir("objetivo"); }]));
       },
       objetivo() {
         decir("¿Qué es lo más importante para vos?");
         opciones([["Cobrar renta mensual", "renta"], ["Que se revalorice", "plusvalia"], ["Usarlo y alquilarlo", "uso"], ["Diversificar mi patrimonio", "diversificar"]]
-          .map(([t, v]) => [t, () => { perfilBot.objetivo = v; flujo.riesgo(); }]));
+          .map(([t, v]) => [t, () => { perfil().objetivo = v; ir("riesgo"); }]));
       },
       riesgo() {
         decir("Última: ¿cuánto riesgo estás dispuesto a asumir?");
         opciones([["Poco, prefiero algo terminado", "baja"], ["Medio, puedo esperar una obra", "media"], ["Alto, busco el mayor potencial", "alta"]]
-          .map(([t, v]) => [t, () => { perfilBot.riesgo = v; flujo.resultado(); }]));
+          .map(([t, v]) => [t, () => { perfil().riesgo = v; ir("resultado"); }]));
       },
       resultado() {
-        const ev = S.evaluate(perfilBot);
-        Object.assign(perfilBot, { recomendacion: ev.top, score: ev.scores[ev.top], scores: ev.scores, perfil: ev.perfil });
+        const ev = S.evaluate(perfil());
+        Object.assign(perfil(), { recomendacion: ev.top, score: ev.scores[ev.top], scores: ev.scores, perfil: ev.perfil });
         decir(`Tu perfil es <b>${ev.perfil}</b>. Lo más adecuado: <b>${ev.producto.nombre}</b>, con un índice de idoneidad de <b>${ev.scores[ev.top]}/100</b>.`);
         decir("¿Querés que un asesor te contacte con proyectos concretos?");
-        opciones([["Sí, contáctenme", flujo.permiso], ["Prefiero el informe completo", flujo.simulador], ["Ahora no, gracias", flujo.fin]]);
+        opciones([["Sí, contáctenme", () => ir("permiso")], ["Prefiero el informe completo", () => ir("simulador")], ["Ahora no, gracias", () => ir("fin")]]);
       },
       // Antes de pedir datos personales, el consentimiento explícito
       permiso() {
-        decir(`Para que un asesor te escriba necesitamos guardar tu nombre y tu contacto. ¿Aceptás? <a href="${B}privacidad/index.html" target="_blank" rel="noopener">Política de privacidad</a>`);
-        opciones([["Sí, acepto", () => { perfilBot.consentimiento = true; flujo.nombre(); }], ["No, gracias", flujo.fin]]);
+        decir(`Para que un asesor te escriba necesitamos guardar tu nombre y tu contacto. ¿Aceptás? <a href="${enlace("privacidad/index.html")}" target="_blank" rel="noopener">Política de privacidad</a>`);
+        opciones([["Sí, acepto", () => { perfil().consentimiento = true; ir("nombre"); }], ["No, gracias", () => ir("fin")]]);
       },
-      nombre() { decir("¿Cómo te llamás?"); pedir("Tu nombre", v => { perfilBot.nombre = v; flujo.contacto(); }); },
+      nombre() { decir("¿Cómo te llamás?"); pedir("Tu nombre", v => { perfil().nombre = v; ir("contacto"); }); },
       contacto() {
         decir("¿A qué WhatsApp o email te escribimos?");
         pedir("+34 600 000 000 o email", async v => {
-          if (v.includes("@")) perfilBot.email = v; else perfilBot.telefono = v;
-          try { await DB.insertLead({ ...perfilBot }); decir(`Listo, ${esc(perfilBot.nombre)}. Un asesor te escribe en el día.`); }
-          catch (e) { decir("No pude guardar tus datos. Escribinos directo por WhatsApp."); }
-          decir(`Si preferís, <a href="${waLink("Hola, soy " + perfilBot.nombre + ", hablé con el asistente de la web.")}" target="_blank" rel="noopener">escribinos por WhatsApp</a>.`);
-          opciones([["Ver el informe en PDF", flujo.simulador], ["Terminar", flujo.fin]]);
+          if (v.includes("@")) perfil().email = v; else perfil().telefono = v;
+          try {
+            const { guardado, ...lead } = perfil();
+            await DB.insertLead(lead);
+            perfil().guardado = true;
+            decir(`Listo, ${esc(perfil().nombre)}. Guardamos tus datos y un asesor te escribe en el día.`);
+          } catch (e) { console.error(e); decir("No pude guardar tus datos. Escribinos directo por WhatsApp."); }
+          decir(`Si preferís, <a href="${waLink("Hola, soy " + perfil().nombre + ", hablé con el asistente de la web.")}" target="_blank" rel="noopener">escribinos por WhatsApp</a>.`);
+          ir("hecho");
         });
       },
+      hecho() { opciones([["Ver el informe en PDF", () => ir("simulador")], ["Terminar", () => ir("fin")]]); },
       simulador() {
         decir("Te llevo al simulador con tu perfil cargado: solo te falta completar tus datos.");
-        const datos = { capital: perfilBot.capital, moneda: "USD", objetivo: perfilBot.objetivo, riesgo: perfilBot.riesgo, pais: perfilBot.pais, financiacion: perfilBot.financiacion, nombre: perfilBot.nombre, paso: 3 };
-        setTimeout(() => window.YVYIrAlSimulador(datos), 900);
+        const p = perfil();
+        const datos = { capital: p.capital, moneda: "USD", objetivo: p.objetivo, riesgo: p.riesgo, pais: p.pais, financiacion: p.financiacion, nombre: p.nombre, paso: 3 };
+        estado.paso = "fin"; guardarChat(); // al volver, la conversación queda cerrada
+        if (!restaurando) setTimeout(() => window.YVYIrAlSimulador(datos), 900);
       },
-      fin() { decir("Perfecto. Si te surge una duda, estoy acá."); opciones([["Empezar de nuevo", flujo.inicio]]); }
+      fin() { decir("Perfecto. Si te surge una duda, estoy acá."); opciones([["Empezar de nuevo", reiniciar]]); }
     };
-    const abrir = () => { chat.hidden = false; botBtn.setAttribute("aria-expanded", "true"); if (!iniciado) { iniciado = true; flujo.inicio(); } };
+
+    function reiniciar() {
+      borrarChat();
+      log.innerHTML = ""; ops.innerHTML = ""; inForm.hidden = true; esperando = null;
+      estado = nuevoEstado();
+      ir("inicio");
+    }
+    // Retoma la conversación guardada: historial + la última pregunta pendiente
+    function restaurar(guardado) {
+      estado = guardado;
+      estado.mensajes.forEach(m => pintarMensaje(m.t, m.q));
+      restaurando = true;
+      try { (flujo[estado.paso] || flujo.fin)(); } finally { restaurando = false; }
+    }
+
+    const abrir = () => {
+      chat.hidden = false; botBtn.setAttribute("aria-expanded", "true");
+      if (!estado) { const g = leerChat(); if (g && g.mensajes.length) restaurar(g); else { estado = nuevoEstado(); ir("inicio"); } }
+      log.scrollTop = log.scrollHeight;
+    };
     const cerrar = () => { chat.hidden = true; botBtn.setAttribute("aria-expanded", "false"); };
     botBtn.addEventListener("click", () => (chat.hidden ? abrir() : cerrar()));
     $("#chat-cerrar").addEventListener("click", cerrar);
+    const btnReiniciar = $("#chat-reiniciar");
+    if (btnReiniciar) btnReiniciar.addEventListener("click", () => { if (!estado) estado = nuevoEstado(); reiniciar(); });
+    // Si el visitante retira el permiso de preferencias, se borra la copia de largo plazo
+    document.addEventListener("yvy:consentimiento", e => {
+      if (!e.detail.preferencias) { try { localStorage.removeItem(CLAVE_CHAT); } catch (err) { /* sin almacenamiento */ } }
+      else if (estado) guardarChat();
+    });
   }
 
   /* ---------- Aparición suave de las secciones ---------- */
