@@ -740,10 +740,6 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .hp__linea > span { display: inline-block; transform: translateY(110%); }
 .hp__titulo em { font-style: italic; background: var(--oro-grad); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .08em; }
 @keyframes linea { to { transform: none; } }
-.hp__pista { position: absolute; right: max(40px, env(safe-area-inset-right, 0px)); bottom: 96px; display: flex; align-items: center; gap: 12px; font-size: .62rem; letter-spacing: .28em; text-transform: uppercase; color: var(--texto-tenue); opacity: 0; }
-.hp__pista i { width: 26px; height: 1px; background: var(--dorado); }
-.hp__pista .con-dedo { display: none; }
-@media (hover: none) { .hp__pista .con-mouse { display: none; } .hp__pista .con-dedo { display: inline; } }
 .hp__cinta { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea-suave); background: rgba(17, 24, 32, .55); backdrop-filter: blur(8px); overflow: hidden; }
 .hp__cinta-in { display: flex; width: max-content; animation: cinta 40s linear infinite; }
 .hp__cinta span { display: inline-flex; align-items: center; gap: 28px; padding: 18px 0 18px 28px; font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--texto); white-space: nowrap; }
@@ -1069,14 +1065,10 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .hc__contenido a, .hc__contenido button { pointer-events: auto; }
 /* Sombra suave detrás del logo para que el oro se lea sobre el vídeo */
 .hc__velo::before { content: ""; position: absolute; inset: 0; background: radial-gradient(26% 38% at 76% 42%, rgba(17, 24, 32, .62), transparent 72%); }
-.hc__pista { position: absolute; z-index: 1; left: var(--logo-x, 76%); top: var(--logo-y, 70%); right: auto; bottom: auto; transform: translateX(-50%); white-space: nowrap; }
-.hc.listo .hc__pista { animation: subir-centrada 1s ease 2.4s forwards; }
-@keyframes subir-centrada { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @media (max-width: 899px) {
   .hc__velo::before { background: radial-gradient(50% 22% at 50% 22%, rgba(17, 24, 32, .6), transparent 75%); }
   .hc__contenido { padding-top: 250px; }
 }
-@media (prefers-reduced-motion: reduce) { .hc__pista { opacity: 1 !important; animation: none !important; } }
 
 /* ---------- Cabeceras de las páginas interiores con vídeo (js/video-fondo.js) ---------- */
 .vf, .vf__velo { position: absolute; inset: 0; pointer-events: none; }

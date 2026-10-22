@@ -31,9 +31,6 @@
       lado = Math.min(ancho ? W * 0.3 : W * 0.78, H * (ancho ? 0.62 : 0.5), 460);
       cx = ancho ? W * 0.77 : W / 2; cy = ancho ? H * 0.45 : H * 0.3;
     }
-    // Posición para la pista "Mové el cursor · dispersalo", debajo del logo
-    zona.style.setProperty("--logo-x", cx + "px");
-    zona.style.setProperty("--logo-y", cy + lado / 2 + 18 + "px");
     const off = document.createElement("canvas");
     off.width = Math.ceil(W); off.height = Math.ceil(H);
     const o = off.getContext("2d");
