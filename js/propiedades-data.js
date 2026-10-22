@@ -134,16 +134,41 @@ window.YVY_CASAS = [
   }
 ];
 
-// Propiedades que el equipo da de alta en el Back Office (tabla "propiedades"):
+// Propiedades de la base de datos (tabla "propiedades", administradas desde el Back Office):
 // se convierten al mismo formato que las casas de arriba para usar las mismas tarjetas y ficha.
+// Las 10 casas de arriba también están en la base (ver YVYCarteraComoFilas); su "slug" conserva el id
+// de siempre, así no se rompen los favoritos ni los enlaces directos (#horizon-home).
 window.YVYCasaDesdeDB = (p, urlFoto) => ({
-  id: "p-" + p.id, db: true, tipo: p.tipo,
-  nombre: p.tipo + " en " + p.ciudad, zona: p.ubicacion, ciudad: p.ciudad, pais: p.pais,
-  precio: +p.precio || null, moneda: p.moneda || "USD", operacion: p.operacion || "venta", codigo: p.codigo,
-  estado: p.condicion === "nuevo" ? "A estrenar" : "Usado", anio: p.anio_construccion,
-  construido: +p.metros, terreno: null, dorm: p.habitaciones || 0, banos: p.banos || 0, cocheras: p.garaje ? 1 : 0, niveles: null,
-  imgs: (p.fotos || []).map(urlFoto), mapa: false,
-  etiquetas: p.condicion === "nuevo" ? ["estrenar"] : [],
-  descripcion: p.descripcion ? String(p.descripcion).split(/\n+/).filter(Boolean) : [],
-  interior: [], exterior: [p.garaje && "Garaje", p.trastero && "Trastero"].filter(Boolean)
+  id: p.slug || "p-" + p.id, db: true, dbId: p.id, tipo: p.tipo,
+  nombre: p.nombre || p.tipo + " en " + p.ciudad, zona: p.ubicacion, ciudad: p.ciudad, pais: p.pais,
+  precio: p.precio === null || p.precio === undefined ? null : +p.precio || null,
+  moneda: p.moneda || "USD", operacion: p.operacion || "venta", codigo: p.codigo,
+  estado: p.estado_texto || (p.condicion === "nuevo" ? "A estrenar" : "Usado"), anio: p.anio_construccion,
+  construido: +p.metros, terreno: p.terreno ? +p.terreno : null, condominio: !!p.condominio,
+  dorm: p.habitaciones || 0, banos: p.banos || 0,
+  cocheras: p.cocheras === null || p.cocheras === undefined ? (p.garaje ? 1 : 0) : p.cocheras, niveles: p.niveles || null,
+  imgs: (p.fotos || []).map(urlFoto), mapa: p.mapa ? urlFoto(p.mapa) : false,
+  etiquetas: p.etiquetas && p.etiquetas.length ? p.etiquetas : p.condicion === "nuevo" ? ["estrenar"] : [],
+  resumen: p.resumen || "", precioNota: p.precio_nota || "",
+  descripcion: p.descripcion ? String(p.descripcion).split(/\n\s*\n|\n/).filter(Boolean) : [],
+  interior: p.interior || [],
+  exterior: p.exterior && p.exterior.length ? p.exterior : [p.garaje && "Garaje", p.trastero && "Trastero"].filter(Boolean)
 });
+
+// Las 10 casas de arriba como filas de la tabla "propiedades". Sirve para cargarlas en la base
+// (supabase/cartera-inicial.sql se genera con esto) y para el modo demo.
+// created_at va hacia atrás para que conserven su orden y las altas nuevas aparezcan primero.
+window.YVYCarteraComoFilas = () => window.YVY_CASAS.map((c, i) => ({
+  slug: c.id, codigo: "SB-" + String(i + 1).padStart(2, "0"), nombre: c.nombre,
+  operacion: "venta", tipo: "Casa", condicion: c.estado === "A estrenar" ? "nuevo" : "usado", estado_texto: c.estado,
+  metros: c.construido, terreno: c.terreno, condominio: !c.terreno, anio_construccion: c.anio || null,
+  habitaciones: c.dorm, banos: c.banos, cocheras: c.cocheras, niveles: c.niveles || null,
+  garaje: c.cocheras > 0, trastero: false,
+  ubicacion: c.zona, ciudad: "San Bernardino", pais: "Paraguay",
+  precio: c.precio, moneda: "USD", precio_nota: c.precioNota || null, estado: "publicada",
+  resumen: c.resumen || null, descripcion: (c.descripcion || []).join("\n\n"),
+  etiquetas: c.etiquetas || [], interior: c.interior || [], exterior: c.exterior || [],
+  fotos: Array.from({ length: c.fotos }, (_, n) => `assets/props/${c.id}/${String(n + 1).padStart(2, "0")}.jpg`),
+  mapa: c.mapa ? `assets/props/${c.id}/mapa.jpg` : null,
+  created_at: new Date(Date.UTC(2026, 0, 1) - i * 60000).toISOString()
+}));

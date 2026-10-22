@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#111820">
 <title>Política de cookies · YVY Capital</title>
-<script>document.documentElement.classList.add("js");</script>
+<script>document.documentElement.classList.add("js");try{var c=JSON.parse(localStorage.getItem("yvy_consentimiento"));if(!c||c.v!==1||Date.now()-new Date(c.fecha)>3.2e10)throw 0}catch(e){document.documentElement.classList.add("con-galletas")}</script>
 <meta name="description" content="Qué guarda la web de YVY Capital en tu navegador, para qué y cómo cambiar tu elección.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&display=swap">
+<link rel="preload" href="../assets/fuentes/montserrat.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fuentes/manrope.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body data-base="../" data-pagina="cookies">
@@ -72,7 +73,6 @@
       <h2>Servicios de terceros que intervienen al cargar la web</h2>
       <p>Estos servicios no guardan nada en tu navegador por pedido de esta web. Como cualquier servidor, sí reciben datos técnicos de la conexión (dirección IP, navegador):</p>
       <ul>
-        <li><strong>Google Fonts</strong> (fonts.googleapis.com, fonts.gstatic.com): tipografías Montserrat y Manrope.</li>
         <li><strong>jsDelivr</strong> (cdn.jsdelivr.net): librería de Supabase.</li>
         <li><strong>cdnjs / Cloudflare</strong> (cdnjs.cloudflare.com): librería jsPDF, para el informe en PDF.</li>
         <li><strong>ExchangeRate-API</strong> (open.er-api.com): tipos de cambio del día para el selector de moneda.</li>
@@ -92,7 +92,6 @@
 
 <script src="../js/consentimiento.js"></script>
 <script src="../js/layout.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/moneda.js"></script>
 <script src="../js/db.js"></script>

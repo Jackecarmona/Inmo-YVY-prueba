@@ -145,10 +145,15 @@
   DB.favoritos().then(f => { favs = f; pintar(); if (actual) pintarFav(actual.id); }).catch(() => pintar());
   pintar();
 
-  // Suma las propiedades publicadas desde el Back Office, delante de la cartera inicial
-  DB.propiedades().then(rows => {
-    if (!rows.length) return;
-    CASAS = [...rows.map(p => window.YVYCasaDesdeDB(p, r => DB.urlFoto(r))), ...BASE];
+  // Propiedades de la base (las administra el equipo desde el Back Office). Si la cartera inicial ya
+  // está en la base, se muestra solo la base: así ocultar o editar una casa allí se refleja aquí.
+  // Si todavía no (no se ejecutó schema.sql), se suman las 10 casas de js/propiedades-data.js.
+  DB.propiedades().then(async rows => {
+    const desdeBase = rows.map(p => window.YVYCasaDesdeDB(p, r => DB.urlFoto(r)));
+    const enBase = rows.some(r => r.slug) || (await DB.carteraEnBase());
+    if (!rows.length && !enBase) return;
+    const ids = new Set(desdeBase.map(c => c.id));
+    CASAS = enBase ? desdeBase : [...desdeBase, ...BASE.filter(b => !ids.has(b.id))];
     const total = $(".pr-resumen b");
     if (total) { total.textContent = CASAS.length; total.nextElementSibling.textContent = "propiedades"; }
     pintar();
@@ -235,7 +240,7 @@
       <dl class="pr-datos">
         ${c.codigo ? fila("Código", esc(c.codigo)) : ""}
         ${fila("Construido", c.construido + " m²")}
-        ${fila("Terreno", c.terreno ? miles(c.terreno) + " m²" : c.db ? "—" : "Condominio")}
+        ${fila("Terreno", c.terreno ? miles(c.terreno) + " m²" : c.condominio || !c.db ? "Condominio" : "—")}
         ${fila("Dormitorios", c.dorm)}
         ${fila("Baños", c.banos)}
         ${fila("Cocheras", c.cocheras)}
@@ -288,7 +293,7 @@
     $$("[data-pr-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.prTab === t));
     const escena = $("#pr-escena");
     if (t === "fotos") pintarGaleria();
-    if (t === "mapa") escena.innerHTML = `<figure class="pr-mapa"><img src="${B}assets/props/${actual.id}/mapa.jpg" alt="Mapa con la ubicación aproximada de ${esc(actual.nombre)}"><figcaption>Ubicación aproximada · ${esc(actual.zona)}. La dirección exacta se comparte al agendar la visita.</figcaption></figure>`;
+    if (t === "mapa") escena.innerHTML = `<figure class="pr-mapa"><img src="${esc(typeof actual.mapa === "string" ? actual.mapa : `${B}assets/props/${actual.id}/mapa.jpg`)}" alt="Mapa con la ubicación aproximada de ${esc(actual.nombre)}"><figcaption>Ubicación aproximada · ${esc(actual.zona)}. La dirección exacta se comparte al agendar la visita.</figcaption></figure>`;
   }
 
   function pintarGaleria() {

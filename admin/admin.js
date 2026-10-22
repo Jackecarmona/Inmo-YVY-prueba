@@ -1,3 +1,5 @@
+// El panel vive en admin/: las fotos propias de la web (assets/…) se piden desde la carpeta de arriba
+window.YVY_BASE = window.YVY_BASE || "../";
 (() => {
   const DB = window.YVYDB, S = window.YVYScoring, cfg = window.YVY_CONFIG;
   const $ = s => document.querySelector(s);
@@ -216,8 +218,8 @@
   });
 
   /* ---------- Propiedades (se publican en la web) ---------- */
-  const MAX_FOTOS = 6;
-  const dinero = (n, m) => (m === "EUR" ? Math.round(n).toLocaleString("es") + " €" : "US$ " + Math.round(n).toLocaleString("es"));
+  const MAX_FOTOS = 10; // algunas residencias de la cartera inicial ya traen 7
+  const dinero = (n, m) => (n === null || n === undefined ? "Consultar" : m === "EUR" ? Math.round(n).toLocaleString("es") + " €" : "US$ " + Math.round(n).toLocaleString("es"));
   let props = [];
 
   async function cargarProps() {
@@ -232,7 +234,7 @@
       <tr data-id="${esc(p.id)}">
         <td>${p.fotos && p.fotos.length ? `<img src="${esc(DB.urlFoto(p.fotos[0]))}" alt="">` : `<span class="sinfoto">Sin foto</span>`}</td>
         <td><b>${esc(p.codigo || "—")}</b></td>
-        <td>${esc(p.tipo)}<small>${p.operacion === "alquiler" ? "Alquiler" : "Venta"} · ${p.condicion === "nuevo" ? "A estrenar" : "Usado"}</small></td>
+        <td>${esc(p.nombre || p.tipo)}<small>${p.nombre ? esc(p.tipo) + " · " : ""}${p.operacion === "alquiler" ? "Alquiler" : "Venta"} · ${esc(p.estado_texto || (p.condicion === "nuevo" ? "A estrenar" : "Usado"))}</small></td>
         <td>${esc(p.ubicacion)}<small>${esc(p.ciudad)}, ${esc(p.pais)}</small></td>
         <td class="num">${Number(p.metros).toLocaleString("es")} m²</td>
         <td class="num">${dinero(p.precio, p.moneda)}${p.operacion === "alquiler" ? " /mes" : ""}</td>
@@ -329,6 +331,12 @@
       x.precio.value = val(p.precio); x.moneda.value = p.moneda || "USD";
       x.ubicacion.value = val(p.ubicacion); x.ciudad.value = val(p.ciudad); x.pais.value = val(p.pais);
       x.descripcion.value = val(p.descripcion); x.estado.value = p.estado === "publicada" ? "publicada" : "borrador";
+      // Campos de la ficha completa
+      x.nombre.value = val(p.nombre); x.estado_texto.value = val(p.estado_texto);
+      x.terreno.value = val(p.terreno); x.cocheras.value = val(p.cocheras); x.niveles.value = val(p.niveles);
+      x.condominio.checked = !!p.condominio; x.precio_nota.value = val(p.precio_nota);
+      fp.querySelectorAll('[name="etiqueta"]').forEach(c => { c.checked = (p.etiquetas || []).includes(c.value); });
+      x.interior.value = (p.interior || []).join("\n"); x.exterior.value = (p.exterior || []).join("\n");
     }
     etiquetaPrecio();
     pintarActuales();
@@ -361,18 +369,29 @@
       habitaciones: n(x.habitaciones.value) ?? 0, banos: n(x.banos.value) ?? 0,
       garaje: x.garaje.value === "si", trastero: x.trastero.value === "si",
       ubicacion: x.ubicacion.value.trim(), ciudad: x.ciudad.value.trim(), pais: x.pais.value.trim(),
-      precio: Number(x.precio.value), moneda: x.moneda.value, estado: x.estado.value, descripcion: x.descripcion.value.trim()
+      // Sin precio = "Consultar precio" en la web
+      precio: x.precio.value.trim() === "" ? null : Number(x.precio.value), moneda: x.moneda.value, estado: x.estado.value, descripcion: x.descripcion.value.trim(),
+      // Ficha completa
+      nombre: x.nombre.value.trim() || null, estado_texto: x.estado_texto.value.trim() || null,
+      terreno: n(x.terreno.value.trim()), cocheras: n(x.cocheras.value.trim()), niveles: n(x.niveles.value.trim()),
+      condominio: x.condominio.checked, precio_nota: x.precio_nota.value.trim() || null,
+      etiquetas: [...fp.querySelectorAll('[name="etiqueta"]:checked')].map(c => c.value),
+      interior: x.interior.value.split("\n").map(s => s.trim()).filter(Boolean),
+      exterior: x.exterior.value.split("\n").map(s => s.trim()).filter(Boolean)
     };
-    // Al crear, sin descripción no se envía el campo; al editar, vaciarla la borra
-    if (!d.descripcion) { if (editando) d.descripcion = null; else delete d.descripcion; }
+    // Al crear no se envían los campos vacíos; al editar sí, para poder vaciarlos
+    if (!d.descripcion) d.descripcion = null;
+    if (!editando) Object.keys(d).forEach(k => { if (d[k] === null || (Array.isArray(d[k]) && !d[k].length)) delete d[k]; });
     const fallo = t => { errProp.textContent = t; };
+    const entero = (v, min, max) => v === null || v === undefined || (Number.isInteger(v) && v >= min && v <= max);
     if (!d.codigo) return fallo("Escribí el código del inmueble (por ejemplo YVY-011).");
     if (!(d.metros > 0)) return fallo("Indicá la superficie en m².");
     if (![d.habitaciones, d.banos].every(v => Number.isInteger(v) && v >= 0 && v <= 50)) return fallo("Dormitorios y baños tienen que ser números enteros.");
-    if (d.anio_construccion !== null && !(Number.isInteger(d.anio_construccion) && d.anio_construccion >= 1800 && d.anio_construccion <= 2100)) return fallo("El año de construcción tiene que estar entre 1800 y 2100.");
-    if (x.precio.value === "" || !(d.precio >= 0)) return fallo("Indicá un precio válido.");
+    if (d.anio_construccion !== null && d.anio_construccion !== undefined && !entero(d.anio_construccion, 1800, 2100)) return fallo("El año de construcción tiene que estar entre 1800 y 2100.");
+    if (d.precio !== null && d.precio !== undefined && !(Number.isFinite(d.precio) && d.precio >= 0 && d.precio <= 1e12)) return fallo("Indicá un precio válido, o dejalo vacío para «Consultar precio».");
+    if (d.terreno !== null && d.terreno !== undefined && !(Number.isFinite(d.terreno) && d.terreno >= 0)) return fallo("El terreno tiene que ser un número de m² (o dejalo vacío).");
+    if (!entero(d.cocheras, 0, 20) || !entero(d.niveles, 1, 20)) return fallo("Cocheras y niveles tienen que ser números enteros.");
     if (!d.ubicacion || !d.ciudad || !d.pais) return fallo("Completá la zona, la ciudad y el país.");
-    if (!Number.isFinite(d.precio) || d.precio > 1e12) return fallo("Indicá un precio válido.");
     const files = [...x.fotos.files];
     if (files.length > cupoFotos()) return fallo(`Podés agregar como máximo ${cupoFotos()} foto(s) más (${MAX_FOTOS} en total).`);
     const btn = $("#guardar-prop"), texto = btn.textContent, prop = editando;

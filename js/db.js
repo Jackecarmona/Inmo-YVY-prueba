@@ -27,12 +27,6 @@ window.YVYDB = (() => {
     await anterior.catch(() => {});
     try { return await fn(); } finally { soltar(); }
   };
-  if (cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase) {
-    sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { lock: bloqueoLocal } });
-    // Cualquier cambio de sesión invalida el rol guardado (sin llamar a Supabase dentro del aviso)
-    sb.auth.onAuthStateChange(evento => { if (evento !== "INITIAL_SESSION" && evento !== "TOKEN_REFRESHED") rolGuardado = null; });
-  }
-
   // Ninguna llamada de sesión puede dejar la página esperando para siempre
   const LIMITE_MS = cfg.limiteMs || 15000; // las pruebas lo acortan
   const conLimite = (promesa, ms = LIMITE_MS) => {
@@ -40,8 +34,62 @@ window.YVYDB = (() => {
     const limite = new Promise((_, no) => { reloj = setTimeout(() => no(new Error("El servidor está tardando en responder. Revisá tu conexión e intentá de nuevo.")), ms); });
     return Promise.race([promesa, limite]).finally(() => clearTimeout(reloj));
   };
+
+  /* ---------- Supabase a demanda ----------
+     La librería (~110 KB) se descarga solo cuando hace falta: al ingresar o crear cuenta, o si ya hay una
+     sesión guardada. Un visitante sin cuenta ve las propiedades y envía formularios con pedidos HTTP
+     directos a la API, sin cargarla. Eso aliviana mucho la carga de cada página. */
+  const conBase = !!(cfg.supabaseUrl && cfg.supabaseAnonKey);
+  const LIB_SUPABASE = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
+  // Dónde guarda la sesión supabase-js: "sb-<proyecto>-auth-token"
+  const CLAVE_SESION_SB = conBase ? "sb-" + new URL(cfg.supabaseUrl).hostname.split(".")[0] + "-auth-token" : "";
+  // Enlaces de los emails (confirmar cuenta, restablecer contraseña) traen la sesión en la dirección
+  const vieneDeEnlace = /access_token=|type=recovery|type=signup|[?&]code=/.test(location.hash + location.search);
+  const haySesionGuardada = () => {
+    if (!conBase) return false;
+    if (vieneDeEnlace || sb) return true;
+    try { return !!localStorage.getItem(CLAVE_SESION_SB); } catch (e) { return false; }
+  };
+  let cargaSb = null;
+  function base() {
+    if (!conBase) return Promise.resolve(null);
+    if (sb) return Promise.resolve(sb);
+    if (!cargaSb) {
+      cargaSb = new Promise((ok, no) => {
+        if (window.supabase) return ok();
+        const s = document.createElement("script");
+        s.src = LIB_SUPABASE; s.async = true;
+        s.onload = () => ok();
+        s.onerror = () => { s.remove(); no(new Error("No pudimos conectar con el servidor. Revisá tu conexión e intentá de nuevo.")); };
+        document.head.appendChild(s);
+      }).then(() => {
+        sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { lock: bloqueoLocal } });
+        // Cualquier cambio de sesión invalida el rol guardado (sin llamar a Supabase dentro del aviso)
+        sb.auth.onAuthStateChange(evento => { if (evento !== "INITIAL_SESSION" && evento !== "TOKEN_REFRESHED") rolGuardado = null; });
+        return sb;
+      });
+      cargaSb.catch(() => { cargaSb = null; }); // si falló la descarga, se reintenta la próxima vez
+    }
+    return conLimite(cargaSb);
+  }
+  // Pedido directo a la API de Supabase con la clave pública (lo que puede hacer cualquier visitante)
+  async function rest(ruta, { method = "GET", body, prefer } = {}) {
+    const r = await conLimite(fetch(cfg.supabaseUrl + "/rest/v1/" + ruta, {
+      method,
+      headers: { apikey: cfg.supabaseAnonKey, Authorization: "Bearer " + cfg.supabaseAnonKey, "Content-Type": "application/json", ...(prefer ? { Prefer: prefer } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    }));
+    if (!r.ok) {
+      let e = {};
+      try { e = await r.json(); } catch (x) { /* sin cuerpo */ }
+      throw Object.assign(new Error(e.message || "Error " + r.status), { code: e.code, status: r.status });
+    }
+    return r.status === 204 || r.status === 201 ? null : r.json();
+  }
   const sesion = async () => {
-    const { data } = await conLimite(sb.auth.getSession());
+    if (!haySesionGuardada()) return null; // sin sesión guardada: ni se descarga la librería
+    const c = await base();
+    const { data } = await conLimite(c.auth.getSession());
     return (data && data.session) || null;
   };
 
@@ -75,6 +123,31 @@ window.YVYDB = (() => {
   const errorPropiedad = e => new Error(e && e.code === "23505"
     ? "Ya existe una propiedad con ese código."
     : "No se pudo guardar. Revisá los datos e intentá de nuevo.");
+  // Fotos de la cartera inicial que vienen con la web (assets/…): se pueden quitar de una propiedad,
+  // pero nunca se borran del almacenamiento porque no están en Supabase
+  const esFotoDeLaWeb = ruta => /^assets\//.test(ruta);
+  const delBucket = rutas => (rutas || []).filter(r => r && !esFotoDeLaWeb(r) && !/^(data:|https?:)/.test(r));
+  // Modo demo: la primera vez se cargan las 10 residencias, igual que hace schema.sql en Supabase
+  const CARTERA_DEMO = "yvy_cartera_demo";
+  function sembrarCarteraDemo() {
+    if (leer(CARTERA_DEMO, false) || !window.YVYCarteraComoFilas || !window.YVY_CASAS) return;
+    const actuales = leer(PROPS, []);
+    const nuevas = window.YVYCarteraComoFilas().filter(f => !actuales.some(a => a.slug === f.slug)).map(f => ({ id: uid(), ...f }));
+    guardar(PROPS, [...actuales, ...nuevas]);
+    guardar(CARTERA_DEMO, true);
+  }
+  // Si la tabla todavía no tiene una columna (no se ejecutó el schema.sql nuevo), Supabase responde
+  // PGRST204 "Could not find the 'x' column": se quita esa columna y se reintenta, en vez de fallar.
+  async function sinColumnasFaltantes(datos, guardarEn) {
+    let d = { ...datos }, r = await guardarEn(d);
+    for (let i = 0; i < 20 && r.error && r.error.code === "PGRST204"; i++) {
+      const col = (/'([^']+)' column/.exec(r.error.message || "") || [])[1];
+      if (!col || !(col in d)) break;
+      delete d[col];
+      r = await guardarEn(d);
+    }
+    return r;
+  }
   const codigoRepetido = (rows, codigo, salvoId) => !!codigo && rows.some(x => x.id !== salvoId && norm(x.codigo) === norm(codigo));
   const guardarPropsDemo = rows => {
     try { localStorage.setItem(PROPS, JSON.stringify(rows)); }
@@ -114,15 +187,16 @@ window.YVYDB = (() => {
   }
 
   return {
-    mode: sb ? "supabase" : "demo",
+    mode: conBase ? "supabase" : "demo",
 
     /* ---------- Solicitudes ---------- */
     async insertLead(lead) {
       const row = { id: uid(), created_at: new Date().toISOString(), estado: "nuevo", notas: "", ...lead };
       if (row.email) row.email = norm(row.email);
-      if (sb) {
+      if (conBase) {
         // La política RLS solo permite INSERT al público: no se pide el registro de vuelta.
-        const { error } = await sb.from("leads").insert(row);
+        if (!haySesionGuardada()) { await rest("leads", { method: "POST", body: row, prefer: "return=minimal" }); return row; }
+        const { error } = await (await base()).from("leads").insert(row);
         if (error) throw error;
         return row;
       }
@@ -133,7 +207,7 @@ window.YVYDB = (() => {
     },
 
     async listLeads() {
-      if (sb) {
+      if (await base()) {
         const { data, error } = await sb.from("leads").select("*").order("created_at", { ascending: false });
         if (error) throw error;
         return data || [];
@@ -142,7 +216,7 @@ window.YVYDB = (() => {
     },
 
     async updateLead(id, patch) {
-      if (sb) {
+      if (await base()) {
         const { error } = await sb.from("leads").update(patch).eq("id", id);
         if (error) throw error;
         return;
@@ -151,7 +225,7 @@ window.YVYDB = (() => {
     },
 
     async deleteLead(id) {
-      if (sb) {
+      if (await base()) {
         const { error } = await sb.from("leads").delete().eq("id", id);
         if (error) throw error;
         return;
@@ -163,32 +237,40 @@ window.YVYDB = (() => {
     // Mismas columnas que la tabla "propiedades" de Supabase. El público solo ve las publicadas
     // (función propiedades_publicadas); el equipo ve también los borradores.
     async propiedades(todas = false) {
-      if (sb) {
-        const { data, error } = todas
-          ? await sb.from("propiedades").select("*").order("created_at", { ascending: false })
-          : await sb.rpc("propiedades_publicadas");
+      if (conBase) {
+        // Las publicadas son públicas: pedido directo, sin descargar la librería
+        if (!todas) return (await rest("rpc/propiedades_publicadas", { method: "POST", body: {} })) || [];
+        const { data, error } = await (await base()).from("propiedades").select("*").order("created_at", { ascending: false });
         if (error) throw error;
         return data || [];
       }
-      const rows = leer(PROPS, []);
+      sembrarCarteraDemo();
+      const rows = leer(PROPS, []).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
       return todas ? rows : rows.filter(p => p.estado === "publicada");
     },
 
-    // En Supabase las fotos son rutas del bucket; en modo demo ya vienen como data: URL
+    // ¿Las 10 residencias ya están en la base? Si sí, la web muestra solo lo de la base (lo que el equipo
+    // administra); si no (todavía no se ejecutó schema.sql), usa la copia de js/propiedades-data.js.
+    async carteraEnBase() {
+      if (!conBase) { sembrarCarteraDemo(); return leer(CARTERA_DEMO, false); }
+      try { return (await rest("rpc/cartera_en_base", { method: "POST", body: {} })) === true; }
+      catch (e) { return false; }
+    },
+
+    // Fotos: "assets/…" son las de la web (cartera inicial), data: URL en modo demo, y el resto rutas
+    // del bucket de Supabase (la dirección pública se arma sin necesitar la librería)
     urlFoto(ruta) {
-      if (/^(data:|https?:)/.test(ruta) || !sb) return ruta;
-      return sb.storage.from(BUCKET).getPublicUrl(ruta).data.publicUrl;
+      if (!ruta) return "";
+      if (/^(data:|https?:)/.test(ruta)) return ruta;
+      if (esFotoDeLaWeb(ruta)) return (window.YVY_BASE || "") + ruta;
+      if (!conBase) return ruta;
+      return cfg.supabaseUrl + "/storage/v1/object/public/" + BUCKET + "/" + ruta.split("/").map(encodeURIComponent).join("/");
     },
 
     // fotos: Blobs JPEG ya reducidos. Devuelve cuántas fotos no se pudieron subir.
     async crearPropiedad(datos, fotos = []) {
-      if (sb) {
-        let r = await sb.from("propiedades").insert(datos).select("id").single();
-        // Si la tabla todavía no tiene la columna "descripcion", se guarda sin ella
-        if (r.error && r.error.code === "PGRST204" && "descripcion" in datos) {
-          const { descripcion, ...resto } = datos;
-          r = await sb.from("propiedades").insert(resto).select("id").single();
-        }
+      if (await base()) {
+        const r = await sinColumnasFaltantes(datos, d => sb.from("propiedades").insert(d).select("id").single());
         if (r.error) throw errorPropiedad(r.error);
         const { rutas, fallos } = await subirFotos(r.data.id, fotos);
         let fallidas = fallos;
@@ -209,20 +291,16 @@ window.YVYDB = (() => {
     // El orden final de las fotos es: las que quedan, en su orden, y después las nuevas.
     async editarPropiedad(p, datos, { quitar = [], nuevas = [] } = {}) {
       const quedan = (p.fotos || []).filter(f => !quitar.includes(f));
-      if (sb) {
+      if (await base()) {
         const { rutas, fallos } = await subirFotos(p.id, nuevas);
         const cambios = { ...datos, fotos: [...quedan, ...rutas] };
-        let r = await sb.from("propiedades").update(cambios).eq("id", p.id);
-        if (r.error && r.error.code === "PGRST204" && "descripcion" in cambios) {
-          const { descripcion, ...resto } = cambios;
-          r = await sb.from("propiedades").update(resto).eq("id", p.id);
-        }
+        const r = await sinColumnasFaltantes(cambios, d => sb.from("propiedades").update(d).eq("id", p.id));
         if (r.error) {
           if (rutas.length) await sb.storage.from(BUCKET).remove(rutas); // no dejar fotos huérfanas
           throw errorPropiedad(r.error);
         }
         // Las fotos quitadas se borran del almacenamiento recién cuando el cambio quedó guardado
-        if (quitar.length) await sb.storage.from(BUCKET).remove(quitar);
+        if (delBucket(quitar).length) await sb.storage.from(BUCKET).remove(delBucket(quitar));
         return { fallos };
       }
       const rows = leer(PROPS, []);
@@ -233,7 +311,7 @@ window.YVYDB = (() => {
     },
 
     async actualizarPropiedad(id, patch) {
-      if (sb) {
+      if (await base()) {
         const { error } = await sb.from("propiedades").update(patch).eq("id", id);
         if (error) throw error;
         return;
@@ -242,10 +320,10 @@ window.YVYDB = (() => {
     },
 
     async borrarPropiedad(p) {
-      if (sb) {
+      if (await base()) {
         const { error } = await sb.from("propiedades").delete().eq("id", p.id);
         if (error) throw error;
-        if (p.fotos && p.fotos.length) await sb.storage.from(BUCKET).remove(p.fotos);
+        if (delBucket(p.fotos).length) await sb.storage.from(BUCKET).remove(delBucket(p.fotos));
         return;
       }
       guardar(PROPS, leer(PROPS, []).filter(x => x.id !== p.id));
@@ -253,7 +331,7 @@ window.YVYDB = (() => {
 
     /* ---------- Usuarios y roles (solo con Supabase) ---------- */
     async usuarios() {
-      if (!sb) return null;
+      if (!(await base())) return null;
       const { data, error } = await sb.from("profiles").select("id,nombre,email,rol").order("created_at", { ascending: false });
       if (error) throw error;
       const s = await sesion();
@@ -267,13 +345,13 @@ window.YVYDB = (() => {
 
     /* ---------- Equipo (back office) ---------- */
     async hasSession() {
-      if (sb) return (await this.rolActual()) === "equipo";
+      if (conBase) return (await this.rolActual()) === "equipo";
       try { return sessionStorage.getItem(SESSION) === "1" || !!this._demoSession; } catch (e) { return !!this._demoSession; }
     },
 
     async signOut() {
       rolGuardado = null;
-      if (sb) { await conLimite(sb.auth.signOut()).catch(() => {}); return; }
+      if (conBase) { if (haySesionGuardada()) await conLimite((await base()).auth.signOut()).catch(() => {}); return; }
       this._demoSession = false;
       try { sessionStorage.removeItem(SESSION); } catch (e) { /* sin almacenamiento */ }
     },
@@ -282,7 +360,7 @@ window.YVYDB = (() => {
     // Un solo formulario para todos: devuelve "equipo" o "cliente" según el email.
     async entrar(email, password) {
       email = norm(email);
-      if (sb) {
+      if (await base()) {
         rolGuardado = null;
         const { error } = await conLimite(sb.auth.signInWithPassword({ email, password }));
         if (error) throw errorAcceso(error, "entrar");
@@ -305,7 +383,7 @@ window.YVYDB = (() => {
 
     // "equipo", "cliente" o null si no hay sesión
     rolActual() {
-      if (sb) {
+      if (conBase) {
         if (!rolGuardado) {
           const rol = (async () => ((await sesion()) ? ((await esEquipo()) ? "equipo" : "cliente") : null))();
           rolGuardado = rol;
@@ -324,7 +402,7 @@ window.YVYDB = (() => {
     // Envía el enlace para elegir una contraseña nueva. Por seguridad, Supabase no avisa si el email
     // no tiene cuenta: la respuesta es la misma en los dos casos.
     async pedirRestablecer(email) {
-      if (!sb) throw new Error("En el modo demo no se envían emails: creá una cuenta nueva con otro email.");
+      if (!(await base())) throw new Error("En el modo demo no se envían emails: creá una cuenta nueva con otro email.");
       const destino = new URL((window.YVY_BASE || "") + "restablecer/index.html", document.baseURI).href;
       const { error } = await conLimite(sb.auth.resetPasswordForEmail(norm(email), { redirectTo: destino }));
       if (error) throw errorAcceso(error, "olvido");
@@ -332,12 +410,12 @@ window.YVYDB = (() => {
 
     // true si esta página se abrió desde el enlace del email y Supabase dio una sesión para cambiar la contraseña
     async enRecuperacion() {
-      if (!sb) return false;
+      if (!conBase) return false;
       return !!(await sesion()) && vinoDeRecuperacion;
     },
 
     async cambiarContrasena(password) {
-      if (!sb) throw new Error("En el modo demo no se puede cambiar la contraseña.");
+      if (!(await base())) throw new Error("En el modo demo no se puede cambiar la contraseña.");
       const { error } = await conLimite(sb.auth.updateUser({ password }));
       if (error) throw errorAcceso(error, "cambio");
     },
@@ -345,14 +423,14 @@ window.YVYDB = (() => {
     /* ---------- Clientes (área de clientes) ---------- */
     // Vuelve a enviar el email de confirmación (Supabase también limita cuántos se envían por hora)
     async reenviarConfirmacion(email) {
-      if (!sb) return;
+      if (!(await base())) return;
       const { error } = await conLimite(sb.auth.resend({ type: "signup", email: norm(email), options: { emailRedirectTo: paginaAcceso() } }));
       if (error) throw errorAcceso(error, "registro");
     },
 
     async clienteRegistrar(nombre, email, password) {
       email = norm(email);
-      if (sb) {
+      if (await base()) {
         rolGuardado = null;
         const { data, error } = await conLimite(sb.auth.signUp({ email, password, options: { data: { nombre }, emailRedirectTo: paginaAcceso() } }));
         if (error) throw errorAcceso(error, "registro");
@@ -373,7 +451,7 @@ window.YVYDB = (() => {
 
     async clienteEntrar(email, password) {
       email = norm(email);
-      if (sb) {
+      if (await base()) {
         rolGuardado = null;
         const { data, error } = await conLimite(sb.auth.signInWithPassword({ email, password }));
         if (error) throw errorAcceso(error, "entrar");
@@ -386,7 +464,7 @@ window.YVYDB = (() => {
     },
 
     async clienteActual() {
-      if (sb) {
+      if (conBase) {
         const s = await sesion();
         const u = s && s.user;
         return u ? { email: norm(u.email), nombre: u.user_metadata?.nombre || "", id: u.id } : null;
@@ -396,14 +474,14 @@ window.YVYDB = (() => {
 
     async clienteSalir() {
       rolGuardado = null;
-      if (sb) { await conLimite(sb.auth.signOut()).catch(() => {}); return; }
+      if (conBase) { if (haySesionGuardada()) await conLimite((await base()).auth.signOut()).catch(() => {}); return; }
       try { localStorage.removeItem(CLIENTE_SESION); } catch (e) { /* sin almacenamiento */ }
     },
 
     // Con Supabase, la política RLS solo devuelve las solicitudes con el email del cliente
     async misSolicitudes(email) {
       email = norm(email);
-      if (sb) {
+      if (await base()) {
         const { data, error } = await sb.from("leads").select("*").eq("email", email).order("created_at", { ascending: false });
         if (error) throw error;
         return data || [];
@@ -414,7 +492,7 @@ window.YVYDB = (() => {
     async favoritos() {
       const c = await this.clienteActual();
       if (!c) return [];
-      if (sb) {
+      if (await base()) {
         const { data } = await sb.from("favoritos").select("casa_id");
         return (data || []).map(r => r.casa_id);
       }
@@ -426,7 +504,7 @@ window.YVYDB = (() => {
       if (!c) throw new Error("sin-sesion");
       const actuales = await this.favoritos();
       const quitar = actuales.includes(casaId);
-      if (sb) {
+      if (await base()) {
         const q = quitar
           ? sb.from("favoritos").delete().eq("casa_id", casaId)
           : sb.from("favoritos").insert({ user_id: c.id, casa_id: casaId });

@@ -182,7 +182,9 @@ window.YVYConsentimiento = (() => {
       const a = e.target.closest("[data-abrir-galletas]");
       if (a) { e.preventDefault(); abrirPanel(a); }
     });
-    if (estado) return;
+    // El <head> de cada página ya reservó lugar para el banner si no hay una elección válida
+    // (misma regla que leer(): versión y 12 meses). Si hay elección, se libera ese lugar.
+    if (estado) { document.documentElement.classList.remove("con-galletas"); return; }
     // En Inicio, el banner aparece cuando termina la animación del logo, para no taparla
     if (window.YVYAlTerminarIntro) YVYAlTerminarIntro(crearBanner); else crearBanner();
   }

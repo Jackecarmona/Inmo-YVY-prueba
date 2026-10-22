@@ -1,4 +1,11 @@
 /* Back Office YVY Capital: herramienta de trabajo, sobria y densa. */
+
+/* Tipografías alojadas en la propia web (antes, Google Fonts): sin hoja externa que bloquee el primer pintado.
+   Manrope y Montserrat son variables (todos los pesos en un archivo). Licencia: SIL Open Font License. */
+@font-face { font-family: "Manrope"; font-style: normal; font-weight: 200 800; font-display: swap; src: url("../assets/fuentes/manrope.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("../assets/fuentes/montserrat.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-style: italic; font-weight: 300; font-display: swap; src: url("../assets/fuentes/montserrat-italica.woff2") format("woff2"); }
+
 :root {
   --noche: #111820; --noche-2: #1a2430; --dorado: #c6a66b; --marfil: #f3f0e8;
   --fondo: #f6f5f1; --panel: #ffffff; --tinta: #1d2631; --suave: #5f6b78; --linea: #e3e0d8;
@@ -128,3 +135,10 @@ input, select, textarea { font: inherit; padding: 9px 11px; border: 1px solid va
 .foto-actual:focus-visible { outline: 2px solid var(--dorado); outline-offset: 2px; }
 #fotos-actuales img { outline: none; border: 0; border-radius: 0; }
 #fotos-actuales .foto-actual:first-child { border-color: var(--dorado); }
+
+/* Formulario de propiedad: casillas y etiquetas */
+.dlg label.chk { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.dlg label.chk input { width: auto; }
+.dlg label small { font-weight: 400; color: var(--suave); }
+.etiquetas { border: 1px solid var(--linea); border-radius: 5px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; }
+.etiquetas legend { font-size: .78rem; font-weight: 600; padding: 0 4px; }

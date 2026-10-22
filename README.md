@@ -42,7 +42,7 @@ Inmo-YVY-prueba/
 │   ├── scoring.js        Modelo clasificador de IA: índice de idoneidad 0-100 + escenarios
 │   ├── pdf.js            Informe PDF (jsPDF se descarga recién al generar el informe)
 │   ├── app.js            Portada, proyectos, simulador, contacto, chatbot, animaciones
-│   ├── propiedades-data.js  Datos de las 10 residencias
+│   ├── propiedades-data.js  Las 10 residencias (copia de respaldo y origen de la carga inicial en la base)
 │   └── propiedades.js    Tarjetas, filtros, favoritos y ficha
 ├── assets/img/ · assets/props/   Fotos de San Bernardino y de cada residencia
 ├── assets/videos/        Vídeo y poster de la portada (licencia en CREDITOS.md)
@@ -174,7 +174,7 @@ e impide que alguien se dé a sí mismo el rol de administrador. Pasos:
 
 ## Pruebas automáticas
 
-Hay 57 pruebas. Para correrlas, abrí `pruebas/index.html` con Live Server y tocá **Ejecutar todas las pruebas** (tardan unos 15 segundos).
+Hay 68 pruebas. Para correrlas, abrí `pruebas/index.html` con Live Server y tocá **Ejecutar todas las pruebas** (tardan unos 15 segundos).
 
 - **Qué cubren:**
   - el inicio de sesión y los roles, incluidos los cortes por tiempo y la memoria del rol
@@ -192,3 +192,30 @@ En la pestaña **Propiedades**, el botón **Editar** abre el mismo formulario de
 
 - **Fotos actuales:** cada una se puede marcar para quitarla, y se pueden sumar nuevas hasta tener 6 en total. Las nuevas van al final.
 - **Al guardar:** primero se suben las fotos nuevas y después se actualiza la propiedad. Las fotos quitadas se borran del almacenamiento recién cuando el cambio quedó guardado. Si algo falla, no se pierde ninguna foto.
+
+## Todas las propiedades se administran desde el Back Office
+
+Las 10 residencias de San Bernardino ya no están solo en el código: `supabase/schema.sql` las carga en la tabla `propiedades` (sección 5).
+Desde **Back Office → Propiedades** se editan, se ocultan (Borrador) o se eliminan igual que las demás.
+
+- **Enlaces y favoritos:** cada casa conserva su id de siempre en la columna `slug` (por ejemplo `horizon-home`), así no se rompen.
+- **Volver a ejecutar `schema.sql`** no pisa lo editado: la carga usa `on conflict do nothing`.
+- **Mientras no se ejecute**, la web sigue mostrando la copia de `js/propiedades-data.js`.
+- **Campos de la ficha completa:**
+  - nombre comercial, estado en texto, terreno y condominio
+  - cocheras, niveles, etiquetas, interior y exterior
+  - nota del precio, y precio vacío = «Consultar precio»
+- **Fotos:** hasta 10 por propiedad. Las de la web (`assets/…`) se pueden quitar de una ficha, pero nunca se borran del almacenamiento.
+
+## Rendimiento
+
+- **Supabase a demanda:** la librería se descarga solo al ingresar o si ya hay una sesión. Un visitante sin cuenta ve las propiedades y envía formularios con pedidos HTTP directos.
+- **jsPDF:** se descarga solo al generar el informe.
+- **Fondo de rayos (WebGL):** se carga cuando se puede ver (al hacer scroll o con el navegador libre).
+- **Vídeos de fondo:** empiezan con la primera interacción o a los 4 s de cargada la página. Antes se ve la imagen poster, en WebP (45–60 % más liviana que el JPEG, que queda de respaldo).
+- **Tipografías:** se alojan en la propia web (`assets/fuentes/`, licencia OFL) y no en Google Fonts. Son 3 archivos woff2 precargados.
+- **Sin desplazamientos (CLS):**
+  - la cabecera es fija y su lugar ya está reservado;
+  - el `<head>` de cada página decide antes del primer pintado si va a aparecer el banner de cookies.
+- **Partículas del logo:** se arman cuando el navegador queda libre.
+- **Intro del logo:** dura 2,2 s.

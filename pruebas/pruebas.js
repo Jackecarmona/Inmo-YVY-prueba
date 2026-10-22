@@ -92,19 +92,23 @@
     const f = document.createElement("iframe");
     f.style.cssText = "position:fixed;width:10px;height:10px;opacity:0;pointer-events:none";
     const cfg = JSON.stringify({ supabaseUrl: "https://falso.supabase.co", supabaseAnonKey: "x", limiteMs: 300, demoEquipo: [], ...config });
-    f.srcdoc = `<base href="${RAIZ}"><script>window.YVY_CONFIG=${cfg};window.supabase={createClient:()=>parent.__clienteFalso};window.fetch=()=>Promise.reject(new Error("sin red en pruebas"));<\/script>` +
+    f.srcdoc = `<base href="${RAIZ}"><script>window.YVY_CONFIG=${cfg};window.supabase={createClient:()=>{parent.__creados=(parent.__creados||0)+1;return parent.__clienteFalso}};window.fetch=()=>Promise.reject(new Error("sin red en pruebas"));<\/script>` +
       scripts.map(s => `<script src="${s}"><\/script>`).join("");
     const listo = new Promise(r => { f.onload = r; });
     document.body.appendChild(f);
     await listo;
-    return { w: f.contentWindow, R, cerrar: () => f.remove() };
+    window.__creados = 0;
+    // Sesión "guardada" en el navegador (la clave que usa supabase-js): sin ella la web ni carga la librería
+    const conSesion = () => localStorage.setItem("sb-falso-auth-token", "{}");
+    return { w: f.contentWindow, R, conSesion, cerrar: () => { localStorage.removeItem("sb-falso-auth-token"); f.remove(); } };
   }
 
   /* =====================================================================
      1. CAPA DE DATOS (js/db.js) con Supabase simulado
      ===================================================================== */
   prueba("Datos e inicio de sesión", "El rol se pregunta una sola vez aunque varias partes lo pidan a la vez", async () => {
-    const { w, R, cerrar } = await moduloSimulado();
+    const { w, R, cerrar, conSesion } = await moduloSimulado();
+    conSesion();
     R.sesion = { user: { id: "u1", email: "ana@x.com", user_metadata: {} } };
     const roles = await Promise.all([w.YVYDB.rolActual(), w.YVYDB.rolActual(), w.YVYDB.rolActual()]);
     igual(roles, ["cliente", "cliente", "cliente"], "roles");
@@ -112,7 +116,8 @@
     cerrar();
   });
   prueba("Datos e inicio de sesión", "Al salir se olvida el rol y al volver se vuelve a preguntar", async () => {
-    const { w, R, cerrar } = await moduloSimulado();
+    const { w, R, cerrar, conSesion } = await moduloSimulado();
+    conSesion();
     R.sesion = { user: { id: "u1", email: "ana@x.com", user_metadata: {} } }; R.esEquipo = true;
     igual(await w.YVYDB.rolActual(), "equipo", "rol antes");
     await w.YVYDB.signOut();
@@ -120,7 +125,8 @@
     cerrar();
   });
   prueba("Datos e inicio de sesión", "Si la sesión no responde, se corta con un aviso en vez de quedarse pegado", async () => {
-    const { w, R, cerrar } = await moduloSimulado();
+    const { w, R, cerrar, conSesion } = await moduloSimulado();
+    conSesion();
     R.colgarSesion = true;
     const t0 = performance.now();
     let msg = "";
@@ -380,7 +386,7 @@
   prueba("Back Office · propiedades", "Alta con 2 fotos: aparece en la tabla y en la web", async () => {
     const { d } = await entrarAlBackOffice();
     await altaDesdeFormulario(d, BASE_PROP, [await fotoDePrueba(), await fotoDePrueba("#243140")]);
-    await hasta(() => d.querySelectorAll("#tb-props tr[data-id]").length === 1, "la fila");
+    await hasta(() => d.querySelectorAll("#tb-props tr[data-id]").length === 11, "la fila nueva junto a las 10 de la cartera");
     const p = JSON.parse(localStorage.getItem("yvy_propiedades_demo"))[0];
     igual(p.fotos.length, 2, "fotos guardadas");
     const web = await abrir("propiedades/index.html");
@@ -417,24 +423,24 @@
     igual(despues.descripcion, null, "descripción vaciada");
     igual(despues.fotos.length, 2, "cantidad de fotos");
     afirmar(despues.fotos[0] === antes.fotos[1] && despues.fotos[1] !== antes.fotos[0], "orden de fotos (queda la 2.ª y se suma la nueva)");
-    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length, 1, "no se duplicó");
+    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length, 11, "no se duplicó");
   });
-  prueba("Back Office · propiedades", "Editar: no deja pasar de 6 fotos en total", async () => {
+  prueba("Back Office · propiedades", "Editar: no deja pasar de 10 fotos en total", async () => {
     const { d } = await entrarAlBackOffice();
-    const cinco = await Promise.all([1, 2, 3, 4, 5].map(() => fotoDePrueba()));
-    await altaDesdeFormulario(d, BASE_PROP, cinco);
+    const nueve = await Promise.all([1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => fotoDePrueba()));
+    await altaDesdeFormulario(d, BASE_PROP, nueve);
     await hasta(() => d.querySelector("[data-editar]"), "botón Editar");
     d.querySelector("[data-editar]").click();
     ponerArchivos(d.getElementById("form-prop").elements.fotos, [await fotoDePrueba(), await fotoDePrueba()]);
     d.getElementById("form-prop").requestSubmit();
     await hasta(() => /como máximo 1 foto/.test(d.getElementById("err-prop").textContent), "aviso del máximo");
-    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo"))[0].fotos.length, 5, "no se guardó nada");
+    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo"))[0].fotos.length, 9, "no se guardó nada");
   });
   prueba("Back Office · propiedades", "Editar: un código que ya usa otra propiedad se rechaza; el propio se acepta", async () => {
     const { d } = await entrarAlBackOffice();
     await altaDesdeFormulario(d, BASE_PROP);
     await altaDesdeFormulario(d, { ...BASE_PROP, codigo: "YVY-T2" });
-    await hasta(() => d.querySelectorAll("[data-editar]").length === 2, "dos filas");
+    await hasta(() => d.querySelectorAll("[data-editar]").length === 12, "las dos filas nuevas");
     const fila = [...d.querySelectorAll("#tb-props tr")].find(tr => /YVY-T2/.test(tr.textContent));
     fila.querySelector("[data-editar]").click();
     escribir(d.getElementById("form-prop").elements.codigo, "yvy-t1");
@@ -451,7 +457,7 @@
     const f = d.getElementById("form-prop"), x = f.elements, err = d.getElementById("err-prop");
     const casos = [
       [{}, /código/], [{ codigo: "A" }, /superficie/], [{ codigo: "A", metros: "50", habitaciones: "2.5" }, /enteros/],
-      [{ codigo: "A", metros: "50", habitaciones: "2", anio: "1700" }, /1800 y 2100/], [{ codigo: "A", metros: "50", anio: "" }, /precio/],
+      [{ codigo: "A", metros: "50", habitaciones: "2", anio: "1700" }, /1800 y 2100/], [{ codigo: "A", metros: "50", precio: "-5" }, /precio válido/], [{ codigo: "A", metros: "50", cocheras: "1.5" }, /Cocheras y niveles/],
       [{ codigo: "A", metros: "50", precio: "100", ubicacion: "" }, /zona, la ciudad y el país/]
     ];
     for (const [datos, esperado] of casos) {
@@ -460,7 +466,7 @@
       f.requestSubmit();
       afirmar(esperado.test(err.textContent), `${JSON.stringify(datos)} → «${err.textContent}»`);
     }
-    igual(localStorage.getItem("yvy_propiedades_demo"), null, "no se guardó nada");
+    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length, 10, "no se guardó nada (solo la cartera)");
   });
   prueba("Back Office · propiedades", "Pasar a borrador la oculta de la web; Eliminar pide confirmación", async () => {
     const { d } = await entrarAlBackOffice();
@@ -470,9 +476,114 @@
     await hasta(() => JSON.parse(localStorage.getItem("yvy_propiedades_demo"))[0].estado === "borrador", "estado guardado");
     const b = d.querySelector("[data-borrar]");
     b.click(); afirmar(/Seguro/.test(b.textContent), "pide confirmación");
-    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length, 1, "todavía no borró");
+    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length, 11, "todavía no borró");
     b.click();
-    await hasta(() => JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length === 0, "borrada");
+    await hasta(() => JSON.parse(localStorage.getItem("yvy_propiedades_demo")).length === 10, "borrada");
+  });
+
+  prueba("Back Office · todas las propiedades", "El Back Office lista las 10 residencias de la web con sus datos", async () => {
+    const { d } = await entrarAlBackOffice();
+    await hasta(() => d.querySelectorAll("#tb-props tr[data-id]").length === 10, "las 10 filas");
+    const texto = d.getElementById("tb-props").textContent;
+    ["Horizon Home", "La Suiza", "SB-01", "SB-10"].forEach(t => afirmar(texto.includes(t), "falta " + t));
+    afirmar(/Consultar/.test(texto), "las casas sin precio dicen «Consultar»");
+    const img = d.querySelector('#tb-props img[src*="assets/props/"]');
+    afirmar(img && /^\.\.\/assets\//.test(img.getAttribute("src")), "foto de la web con la ruta correcta: " + (img && img.getAttribute("src")));
+  });
+  prueba("Back Office · todas las propiedades", "Editar una casa de la cartera: el formulario trae todo y el cambio se ve en la web", async () => {
+    const { d } = await entrarAlBackOffice();
+    await hasta(() => d.querySelectorAll("#tb-props tr[data-id]").length === 10, "las 10 filas");
+    const fila = [...d.querySelectorAll("#tb-props tr")].find(tr => /Horizon Home/.test(tr.textContent));
+    fila.querySelector("[data-editar]").click();
+    const x = d.getElementById("form-prop").elements;
+    igual([x.nombre.value, x.codigo.value, x.precio.value, x.terreno.value, x.cocheras.value, x.niveles.value], ["Horizon Home", "SB-01", "360000", "600", "2", "2"], "campos");
+    afirmar(d.querySelector('[name="etiqueta"][value="vista"]').checked, "etiqueta «vista»");
+    afirmar(/Piscina con cascada/.test(x.exterior.value), "exterior");
+    igual(d.querySelectorAll("#fotos-actuales .foto-actual").length, 6, "fotos actuales");
+    escribir(x.precio, "349000");
+    d.getElementById("form-prop").requestSubmit();
+    await hasta(() => /Cambios guardados/.test(d.getElementById("props-msg").textContent), "guardado");
+    const web = await abrir("propiedades/index.html#horizon-home");
+    await hasta(() => /349\.000/.test(web.d.getElementById("pr-modal-precio").textContent), "precio nuevo en la ficha");
+    const inicio = await abrir("index.html");
+    await hasta(() => /349\.000/.test(inicio.d.getElementById("destacadas").textContent), "precio nuevo en las destacadas de Inicio", 8000);
+  });
+  prueba("Back Office · todas las propiedades", "Pasar una casa de la cartera a borrador la saca de la web", async () => {
+    const { d } = await entrarAlBackOffice();
+    await hasta(() => d.querySelectorAll("#tb-props tr[data-id]").length === 10, "las 10 filas");
+    const fila = [...d.querySelectorAll("#tb-props tr")].find(tr => /La Suiza/.test(tr.textContent));
+    escribir(fila.querySelector("[data-estado]"), "borrador");
+    await hasta(() => JSON.parse(localStorage.getItem("yvy_propiedades_demo")).find(p => p.slug === "la-suiza").estado === "borrador", "guardado");
+    const web = await abrir("propiedades/index.html");
+    await hasta(() => web.d.querySelectorAll(".pr-card").length === 9, "9 tarjetas");
+    afirmar(!web.d.querySelector('[data-abrir="la-suiza"]'), "La Suiza sigue en la web");
+  });
+  prueba("Back Office · todas las propiedades", "Sin precio se publica como «Consultar precio»", async () => {
+    const { d } = await entrarAlBackOffice();
+    const { precio, ...sinPrecio } = BASE_PROP;
+    await altaDesdeFormulario(d, { ...sinPrecio, nombre: "Casa del Lago" });
+    igual(JSON.parse(localStorage.getItem("yvy_propiedades_demo"))[0].precio, undefined, "precio guardado");
+    const web = await abrir("propiedades/index.html");
+    await hasta(() => web.d.querySelector(".pr-card h3") && /Casa del Lago/.test(web.d.querySelector(".pr-card h3").textContent), "la tarjeta con su nombre");
+    afirmar(/Consultar precio/.test(web.d.querySelector(".pr-card__precio").textContent), "dice «Consultar precio»");
+  });
+  prueba("Propiedades (capa de datos)", "Quitar una foto de la web (assets/…) no intenta borrarla del almacenamiento", async () => {
+    const { w, R, cerrar } = await moduloSimulado();
+    await w.YVYDB.editarPropiedad({ id: "p1", fotos: ["assets/props/casa/01.jpg", "p1/subida.jpg"] }, { precio: 1 }, { quitar: ["assets/props/casa/01.jpg", "p1/subida.jpg"] });
+    const borradas = R.llamadas.filter(l => l[0] === "remove").map(l => l[1]).flat();
+    igual(borradas, ["p1/subida.jpg"], "fotos borradas del almacenamiento");
+    cerrar();
+  });
+  prueba("Propiedades (capa de datos)", "Si falta una columna nueva en la base, se guarda igual sin ella", async () => {
+    const { w, R, cerrar } = await moduloSimulado();
+    let intentos = 0;
+    window.__clienteFalso.from = () => ({ update: c => ({ eq: async () => { intentos++; return "nombre" in c ? { error: { code: "PGRST204", message: "Could not find the 'nombre' column of 'propiedades' in the schema cache" } } : { error: null }; } }) });
+    await w.YVYDB.editarPropiedad({ id: "p1", fotos: [] }, { nombre: "X", precio: 5 });
+    igual(intentos, 2, "intentos");
+    cerrar();
+  });
+
+  /* =====================================================================
+     RENDIMIENTO
+     ===================================================================== */
+  prueba("Rendimiento", "Un visitante sin sesión no descarga la librería de Supabase", async () => {
+    const { w, R, cerrar } = await moduloSimulado();
+    igual(await w.YVYDB.rolActual(), null, "rol");
+    igual(await w.YVYDB.clienteActual(), null, "cliente");
+    igual(await w.YVYDB.favoritos(), [], "favoritos");
+    igual(window.__creados, 0, "veces que se creó el cliente de Supabase");
+    afirmar(!R.llamadas.some(l => l[0] === "getSession"), "consultó la sesión igual");
+    cerrar();
+  });
+  prueba("Rendimiento", "Formularios y propiedades públicas usan pedidos directos, sin la librería", async () => {
+    const { w, cerrar } = await moduloSimulado();
+    const pedidos = [];
+    w.fetch = async (url, op) => { pedidos.push([url, op.method, op.headers.Prefer || ""]); return url.includes("rpc/") ? new Response("[]", { status: 200 }) : new Response(null, { status: 201 }); };
+    await w.YVYDB.insertLead({ nombre: "Ana", consentimiento: true });
+    await w.YVYDB.propiedades();
+    afirmar(pedidos[0][0].endsWith("/rest/v1/leads") && pedidos[0][1] === "POST" && pedidos[0][2] === "return=minimal", "solicitud: " + JSON.stringify(pedidos[0]));
+    afirmar(pedidos[1][0].endsWith("/rest/v1/rpc/propiedades_publicadas"), "propiedades: " + JSON.stringify(pedidos[1]));
+    igual(window.__creados, 0, "veces que se creó el cliente de Supabase");
+    cerrar();
+  });
+  prueba("Rendimiento", "Ninguna página carga de entrada Supabase, jsPDF ni Google Fonts", async () => {
+    for (const p of ["index.html", "propiedades/index.html", "simulador/index.html", "cliente/index.html", "admin/index.html"]) {
+      const html = await (await fetch(RAIZ + p)).text();
+      afirmar(!/supabase-js|jspdf|fonts\.googleapis/.test(html), p + " todavía los carga");
+    }
+  });
+  prueba("Rendimiento", "Inicio en móvil: la portada no se mueve al cargar (CLS < 0,1)", async () => {
+    limpiar(); localStorage.removeItem("yvy_consentimiento"); // con banner de cookies, el peor caso
+    const { w } = await abrir("index.html", { ancho: 412, alto: 823 });
+    await espera(2500);
+    const cls = await new Promise(r => { let s = 0; new w.PerformanceObserver(l => l.getEntries().forEach(e => { if (!e.hadRecentInput) s += e.value; })).observe({ type: "layout-shift", buffered: true }); setTimeout(() => r(s), 200); });
+    afirmar(cls < 0.1, "CLS = " + cls.toFixed(3));
+  });
+  prueba("Rendimiento", "El vídeo de portada no se descarga durante la carga inicial", async () => {
+    limpiar();
+    const { d } = await abrir("index.html", { ancho: 412, alto: 823 });
+    await espera(1500);
+    afirmar(!d.querySelector(".hc__video").getAttribute("src"), "el vídeo ya empezó a descargarse");
   });
 
   /* =====================================================================

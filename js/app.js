@@ -95,16 +95,34 @@
   const dest = $("#destacadas");
   if (dest && window.YVY_CASAS) {
     const ids = ["horizon-home", "casa-inteligente", "la-suiza"];
-    dest.innerHTML = ids.map(id => window.YVY_CASAS.find(c => c.id === id)).filter(Boolean).map((c, k) => `
-      <a class="dest" href="${B}propiedades/index.html#${c.id}" style="--k:${k}">
-        <span class="dest__img"><img src="${B}assets/props/${c.id}/01.jpg" alt="${esc(c.nombre)}" loading="lazy"><img class="alt" src="${B}assets/props/${c.id}/02.jpg" alt="" loading="lazy"></span>
+    // La segunda foto solo se ve al pasar el mouse: en pantallas táctiles ni se descarga
+    const conHover = matchMedia("(hover: hover)").matches;
+    const fotosDe = c => c.imgs || [1, 2].map(n => `${B}assets/props/${c.id}/0${n}.jpg`);
+    const pintarDestacadas = casas => {
+      dest.innerHTML = ids.map(id => casas.find(c => c.id === id)).filter(Boolean).map((c, k) => {
+        const f = fotosDe(c);
+        const precio = !c.precio ? "Consultar precio"
+          : c.moneda === "EUR" ? `${num(c.precio)} €` : `<span data-precio-usd="${c.precio}">US$ ${num(c.precio)}</span>`;
+        return `
+      <a class="dest" href="${B}propiedades/index.html#${esc(c.id)}" style="--k:${k}">
+        <span class="dest__img">${f[0] ? `<img src="${esc(f[0])}" alt="${esc(c.nombre)}" loading="lazy" decoding="async">` : ""}${conHover && f[1] ? `<img class="alt" src="${esc(f[1])}" alt="" loading="lazy" decoding="async">` : ""}</span>
         <span class="dest__txt">
           <small>${esc(c.zona)}</small>
           <b>${esc(c.nombre)}</b>
-          <span>${c.precio ? `<span data-precio-usd="${c.precio}">US$ ${num(c.precio)}</span>` : "Consultar precio"} · ${c.construido} m² · ${c.dorm} dormitorios</span>
+          <span>${precio} · ${c.construido} m² · ${c.dorm} dormitorios</span>
         </span>
-      </a>`).join("");
-    pintarPrecios(dest);
+      </a>`;
+      }).join("");
+      pintarPrecios(dest);
+    };
+    pintarDestacadas(window.YVY_CASAS);
+    // Si la cartera ya está en la base, se muestran sus datos (precio, nombre o fotos editados en el Back Office)
+    // (se pide cuando el navegador está libre: no compite con la carga de la portada)
+    const enReposo = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+    enReposo(() => DB.propiedades().then(rows => {
+      const desdeBase = rows.filter(r => ids.includes(r.slug)).map(r => window.YVYCasaDesdeDB(r, x => DB.urlFoto(x)));
+      if (desdeBase.length) pintarDestacadas(desdeBase);
+    }).catch(() => {}));
   }
 
   /* ---------- Proyectos a futuro (ejemplos ficticios) ---------- */

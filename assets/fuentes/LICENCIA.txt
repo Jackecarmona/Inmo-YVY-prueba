@@ -1,0 +1,7 @@
+Tipografías alojadas en la web (descargadas de Google Fonts, subconjunto latino, woff2):
+
+- Manrope  (manrope.woff2, variable 200–800)  · Mikhail Sharanda y colaboradores
+- Montserrat (montserrat.woff2, variable 100–900; montserrat-italica.woff2, itálica 300) · Julieta Ulanovsky y colaboradores
+
+Ambas se distribuyen bajo la SIL Open Font License 1.1 (https://openfontlicense.org),
+que permite usarlas, incrustarlas y alojarlas en un sitio web, también con fines comerciales.

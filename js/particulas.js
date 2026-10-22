@@ -169,5 +169,8 @@
     if (window.YVYAlTerminarIntro) YVYAlTerminarIntro(armar); else setTimeout(armar, 200);
     requestAnimationFrame(paso);
   };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(arrancar); else arrancar();
+  // Se arma cuando el navegador queda libre: no compite con la carga y el primer pintado de la portada
+  const enReposo = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 300));
+  const listoFuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  listoFuentes.then(() => enReposo(arrancar));
 })();

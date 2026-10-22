@@ -91,8 +91,18 @@
     s.async = true;
     document.head.appendChild(s);
   };
-  cargarScript("rayos.js");
   if (document.querySelector("[data-video-fondo]")) cargarScript("video-fondo.js");
+
+  // Los rayos compilan un shader WebGL (tarea pesada): se cargan recién cuando se pueden ver.
+  // Si una portada con vídeo tapa la pantalla, al primer scroll; si no, cuando la página ya cargó y está libre.
+  let rayosPedidos = false;
+  const pedirRayos = () => { if (!rayosPedidos) { rayosPedidos = true; cargarScript("rayos.js"); } };
+  const enReposo = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 1500));
+  const portadaOpaca = document.querySelector(".hc, .pagina-cab[data-video-fondo]");
+  if (portadaOpaca && portadaOpaca.getBoundingClientRect().bottom >= innerHeight * 0.85) {
+    addEventListener("scroll", pedirRayos, { once: true, passive: true });
+  } else if (document.readyState === "complete") enReposo(pedirRayos);
+  else addEventListener("load", () => enReposo(pedirRayos), { once: true });
 
   // Cabecera de las páginas interiores: el isotipo grande, dibujándose, en lugar de una foto
   const cab = document.querySelector(".pagina-cab");
@@ -138,7 +148,7 @@
           <div class="intro__desc">Paraguay · Real Estate · Investment</div>
           <i class="intro__linea"></i>
         </div>
-        <button class="intro__saltar" type="button">Saltar</button>
+        <button class="intro__saltar" type="button" tabindex="-1">Saltar</button>
       </div>`);
     body.classList.add("con-intro");
     const intro = document.getElementById("intro");
@@ -151,7 +161,7 @@
       terminarIntro();
       setTimeout(() => intro.remove(), 1300);
     };
-    setTimeout(cerrar, 3300);
+    setTimeout(cerrar, 2200); // la intro dura poco: la portada tiene que verse rápido
     intro.addEventListener("click", cerrar);
     addEventListener("keydown", cerrar, { once: true });
   } else {

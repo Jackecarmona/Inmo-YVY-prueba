@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#111820">
 <meta name="robots" content="noindex, nofollow">
 <title>YVY Capital · Back Office</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap">
+<link rel="preload" href="../assets/fuentes/montserrat.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fuentes/manrope.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -105,10 +106,12 @@
       <label>Código<input name="codigo" maxlength="30" placeholder="Ej. YVY-011"></label>
       <label>Operación<select name="operacion"><option value="venta">Venta</option><option value="alquiler">Alquiler</option></select></label>
     </div>
+    <label>Nombre comercial (opcional)<input name="nombre" maxlength="80" placeholder="Ej. Horizon Home"></label>
     <div class="g2">
       <label>Tipo de inmueble<select name="tipo"><option>Casa</option><option>Departamento</option><option>Dúplex</option><option>Terreno</option><option>Local</option><option>Oficina</option><option>Otro</option></select></label>
       <label>Condición<select name="condicion"><option value="nuevo">A estrenar</option><option value="usado">Usado</option></select></label>
     </div>
+    <label>Estado del inmueble (opcional)<input name="estado_texto" maxlength="60" placeholder="Ej. Excelente estado · Usada, como nueva"></label>
     <div class="g3">
       <label>Superficie (m²)<input name="metros" type="number" min="1" step="0.01" inputmode="decimal"></label>
       <label>Dormitorios<input name="habitaciones" type="number" min="0" max="50" step="1" inputmode="numeric"></label>
@@ -119,22 +122,40 @@
       <label>Garaje<select name="garaje"><option value="no">No</option><option value="si">Sí</option></select></label>
       <label>Depósito<select name="trastero"><option value="no">No</option><option value="si">Sí</option></select></label>
     </div>
+    <div class="g3">
+      <label>Terreno (m²)<input name="terreno" type="number" min="0" step="0.01" inputmode="decimal"></label>
+      <label>Cocheras<input name="cocheras" type="number" min="0" max="20" step="1" inputmode="numeric"></label>
+      <label>Niveles<input name="niveles" type="number" min="1" max="20" step="1" inputmode="numeric"></label>
+    </div>
+    <label class="chk"><input type="checkbox" name="condominio"> Está en un condominio (sin terreno propio)</label>
     <div class="g2">
-      <label><span id="lbl-precio">Precio</span><input name="precio" type="number" min="0" step="0.01" inputmode="decimal"></label>
+      <label><span id="lbl-precio">Precio</span> <small>(vacío = «Consultar precio»)</small><input name="precio" type="number" min="0" step="0.01" inputmode="decimal"></label>
       <label>Moneda<select name="moneda"><option value="USD">Dólares (US$)</option><option value="EUR">Euros (€)</option></select></label>
     </div>
+    <label>Nota del precio (opcional)<input name="precio_nota" maxlength="120" placeholder="Ej. US$ 265.000 con muebles"></label>
     <label>Barrio o zona<input name="ubicacion" maxlength="200" placeholder="Ej. Zona Anfiteatro"></label>
     <div class="g2">
       <label>Ciudad<input name="ciudad" maxlength="100" value="San Bernardino"></label>
       <label>País<input name="pais" maxlength="80" value="Paraguay"></label>
     </div>
     <label>Descripción (opcional)<textarea name="descripcion" rows="3" placeholder="Lo que destacarías al inversor. Separá los párrafos con una línea en blanco."></textarea></label>
+    <fieldset class="etiquetas">
+      <legend>Etiquetas en la web</legend>
+      <label class="chk"><input type="checkbox" name="etiqueta" value="vista"> Vista al lago</label>
+      <label class="chk"><input type="checkbox" name="etiqueta" value="estrenar"> A estrenar</label>
+      <label class="chk"><input type="checkbox" name="etiqueta" value="amoblada"> Amoblada</label>
+      <label class="chk"><input type="checkbox" name="etiqueta" value="renta"> Ideal renta temporal</label>
+    </fieldset>
+    <div class="g2">
+      <label>Interior <small>(una por línea)</small><textarea name="interior" rows="3" placeholder="Cocina integral&#10;Baño en suite"></textarea></label>
+      <label>Exterior y amenities <small>(una por línea)</small><textarea name="exterior" rows="3" placeholder="Piscina&#10;Quincho"></textarea></label>
+    </div>
     <!-- Solo al editar: las fotos que ya tiene. Tocar una la marca para quitarla al guardar. -->
     <div class="actuales" id="bloque-actuales" hidden>
       <span class="actuales__t">Fotos actuales <small>(tocá una para quitarla)</small></span>
       <div class="prev" id="fotos-actuales"></div>
     </div>
-    <label><span id="lbl-fotos">Fotos (hasta 6, la primera es la portada)</span><input name="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+    <label><span id="lbl-fotos">Fotos (hasta 10, la primera es la portada)</span><input name="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
     <div class="prev" id="prev-fotos"></div>
     <label>Publicación<select name="estado"><option value="publicada">Publicada en la web</option><option value="borrador">Borrador (solo el equipo)</option></select></label>
     <p class="err" id="err-prop" role="alert"></p>
@@ -145,8 +166,8 @@
   </form>
 </dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../js/config.js"></script>
+<script src="../js/propiedades-data.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/scoring.js"></script>
 <script src="../js/pdf.js"></script>

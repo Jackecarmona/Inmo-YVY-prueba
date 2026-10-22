@@ -20,8 +20,10 @@
     caja.insertAdjacentHTML("afterbegin", `
       <div class="vf" aria-hidden="true">
         <picture>
+          <source media="(max-width: 760px)" srcset="${ruta}-poster-movil.webp" type="image/webp">
           <source media="(max-width: 760px)" srcset="${ruta}-poster-movil.jpg">
-          <img class="vf__poster" src="${ruta}-poster.jpg" alt="" width="1920" height="1080" decoding="async">
+          <source srcset="${ruta}-poster.webp" type="image/webp">
+          <img class="vf__poster" src="${ruta}-poster.jpg" alt="" width="1920" height="1080" fetchpriority="high">
         </picture>
         <video class="vf__video" muted loop playsinline preload="none" disablepictureinpicture
           data-src="${ruta}.mp4" data-src-movil="${ruta}-movil.mp4"></video>
@@ -68,7 +70,23 @@
     }).observe(caja);
     document.addEventListener("visibilitychange", () => (document.hidden ? video.pause() : reproducir()));
     if (reducir.addEventListener) reducir.addEventListener("change", () => { if (reducir.matches) { video.pause(); sinVideo(); } });
-    if (document.readyState === "complete") cargar(); else addEventListener("load", cargar, { once: true });
+    cuandoConvenga(cargar);
+  }
+
+  // El vídeo pesa varios MB: no compite con la carga inicial. Empieza con la primera interacción
+  // (scroll, toque, mouse o teclado) o a los 4 s de cargada la página, lo que pase antes.
+  function cuandoConvenga(fn) {
+    let hecho = false;
+    const EVENTOS = ["scroll", "pointerdown", "pointermove", "keydown", "touchstart"];
+    const ya = () => {
+      if (hecho) return;
+      hecho = true;
+      EVENTOS.forEach(ev => removeEventListener(ev, ya));
+      fn();
+    };
+    EVENTOS.forEach(ev => addEventListener(ev, ya, { once: true, passive: true }));
+    const trasCarga = () => setTimeout(ya, 4000);
+    if (document.readyState === "complete") trasCarga(); else addEventListener("load", trasCarga, { once: true });
   }
 
   document.querySelectorAll("[data-video-fondo]").forEach(iniciar);

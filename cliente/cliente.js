@@ -64,8 +64,10 @@
       </div>`;
     $$("[data-pdf]").forEach(b => b.addEventListener("click", () => window.YVYConPdf(b, () => window.YVYPdf.download(sols[+b.dataset.pdf]))));
 
-    // Favoritos: las casas de la cartera inicial y las publicadas desde el Back Office
-    const todas = rows.length && window.YVYCasaDesdeDB ? [...rows.map(p => YVYCasaDesdeDB(p, r => DB.urlFoto(r))), ...CASAS] : CASAS;
+    // Favoritos: primero lo que está en la base (incluida la cartera inicial si ya se migró), sin duplicar
+    const desdeBase = rows.length && window.YVYCasaDesdeDB ? rows.map(p => YVYCasaDesdeDB(p, r => DB.urlFoto(r))) : [];
+    const ids = new Set(desdeBase.map(c => c.id));
+    const todas = [...desdeBase, ...CASAS.filter(c => !ids.has(c.id))];
     pintarFavs(todas, favs);
   }
 
