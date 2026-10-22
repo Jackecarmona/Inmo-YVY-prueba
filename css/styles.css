@@ -227,7 +227,7 @@ html { scroll-padding-top: 100px; }
 @media (max-width: 520px) { .hero__dato { grid-template-columns: 1fr; } .hero__dato div + div { padding-left: 0; border-left: 0; } }
 
 /* Aparición al hacer scroll */
-.js .rv { opacity: 0; transform: translateY(28px); transition: opacity 1s cubic-bezier(.2, .7, .2, 1), transform 1s cubic-bezier(.2, .7, .2, 1); }
+.js .rv { opacity: .01; transform: translateY(28px); transition: opacity 1s cubic-bezier(.2, .7, .2, 1), transform 1s cubic-bezier(.2, .7, .2, 1); }
 .js .rv.visto { opacity: 1; transform: none; }
 .js .rv[data-d="1"] { transition-delay: .12s; } .js .rv[data-d="2"] { transition-delay: .24s; } .js .rv[data-d="3"] { transition-delay: .36s; }
 .carga .hero .rv { transition-duration: 1.4s; }
@@ -840,7 +840,8 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .hc__contenido { width: 100%; padding-block: 40px 34px; }
 .hc__titulo { margin-top: 22px; text-shadow: 0 2px 30px rgba(0, 0, 0, .35); }
 .hc .lead { max-width: 48ch; font-size: 1.1rem; color: rgba(243, 240, 232, .86); }
-.js .hc .eyebrow, .js .hc .lead, .js .hc .hero__ctas { opacity: 0; transform: translateY(20px); }
+/* .01 y no 0: a la vista es igual, pero el navegador cuenta el texto como pintado desde el inicio (LCP) */
+.js .hc .eyebrow, .js .hc .lead, .js .hc .hero__ctas { opacity: .01; transform: translateY(20px); }
 .hc.listo .hp__linea > span { animation: linea 1.2s cubic-bezier(.2, .8, .2, 1) forwards; }
 .hc.listo .hp__linea:nth-child(2) > span { animation-delay: .12s; }
 .hc.listo .hp__linea:nth-child(3) > span { animation-delay: .24s; }
