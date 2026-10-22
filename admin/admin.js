@@ -16,7 +16,13 @@
   // El panel no tiene login propio: se entra por el acceso único (ingresar/),
   // que solo trae aquí a las cuentas del equipo. Una cuenta de cliente vuelve a su área.
   async function arrancar() {
-    const rol = await DB.rolActual();
+    let rol;
+    try { rol = await DB.rolActual(); }
+    catch (ex) {
+      // Sin respuesta del servidor: se avisa en vez de dejar el panel en blanco
+      document.body.insertAdjacentHTML("afterbegin", `<div class="falla" role="alert"><p>${esc(ex.message)}</p><button class="b b--oro" type="button" onclick="location.reload()">Reintentar</button></div>`);
+      return;
+    }
     if (rol === "equipo") return mostrarApp();
     location.replace(rol === "cliente" ? "../cliente/index.html" : "../ingresar/index.html");
   }
@@ -118,7 +124,12 @@
       <div class="acc"><button class="b b--oro" id="d-guardar" type="button">Guardar cambios</button><button class="b b--mal" id="d-borrar" type="button">Eliminar</button></div>
       <p class="guardado" id="d-ok"></p>`;
 
-    if (reco) $("#d-pdf").addEventListener("click", () => window.YVYPdf.download(l));
+    if (reco) $("#d-pdf").addEventListener("click", async e => {
+      const b = e.currentTarget, texto = b.textContent;
+      b.disabled = true; b.textContent = "Preparando PDF…";
+      try { await window.YVYPdf.download(l); } catch (ex) { alert(ex.message); }
+      b.disabled = false; b.textContent = texto;
+    });
     $("#d-guardar").addEventListener("click", async () => {
       const patch = { estado: $("#d-estado").value, notas: $("#d-notas").value };
       try { await DB.updateLead(l.id, patch); Object.assign(l, patch); pintar(); pintarDetalle(l); $("#d-ok").textContent = "Cambios guardados."; }
@@ -229,7 +240,7 @@
           <option value="publicada"${p.estado === "publicada" ? " selected" : ""}>Publicada</option>
           <option value="borrador"${p.estado !== "publicada" ? " selected" : ""}>Borrador</option>
         </select></td>
-        <td><button class="b b--mal" type="button" data-borrar>Eliminar</button></td>
+        <td class="acciones"><button class="b b--linea" type="button" data-editar>Editar</button> <button class="b b--mal" type="button" data-borrar>Eliminar</button></td>
       </tr>`).join("");
   }
 
@@ -240,6 +251,8 @@
     catch (ex) { e.target.value = p.estado; $("#props-msg").textContent = "No se pudo cambiar el estado."; }
   });
   $("#tb-props").addEventListener("click", async e => {
+    const ed = e.target.closest("[data-editar]");
+    if (ed) return abrirFormulario(props.find(x => x.id === ed.closest("tr").dataset.id));
     const b = e.target.closest("[data-borrar]");
     if (!b) return;
     const p = props.find(x => x.id === b.closest("tr").dataset.id);
@@ -264,19 +277,83 @@
     });
   }
 
+  /* Formulario de propiedad: el mismo para crear y para editar */
   const dlg = $("#dlg-prop"), fp = $("#form-prop"), errProp = $("#err-prop");
-  $("#btn-nueva-prop").addEventListener("click", () => { fp.reset(); $("#prev-fotos").textContent = ""; errProp.textContent = ""; $("#lbl-precio").textContent = "Precio"; dlg.showModal(); });
-  $("#cancelar-prop").addEventListener("click", () => dlg.close());
-  fp.elements.operacion.addEventListener("change", e => { $("#lbl-precio").textContent = e.target.value === "alquiler" ? "Alquiler por mes" : "Precio"; });
-  fp.elements.fotos.addEventListener("change", () => {
-    const fs = [...fp.elements.fotos.files];
-    errProp.textContent = fs.length > MAX_FOTOS ? `Podés subir como máximo ${MAX_FOTOS} fotos.` : "";
-    $("#prev-fotos").innerHTML = "";
-    fs.slice(0, MAX_FOTOS).forEach(f => { const im = document.createElement("img"); im.alt = ""; im.src = URL.createObjectURL(f); im.onload = () => URL.revokeObjectURL(im.src); $("#prev-fotos").appendChild(im); });
+  let editando = null;          // la propiedad que se está editando (null = alta nueva)
+  let fotosQuitar = new Set();  // rutas de fotos actuales marcadas para quitar
+
+  const fotosQueQuedan = () => (editando ? (editando.fotos || []).filter(f => !fotosQuitar.has(f)).length : 0);
+  const cupoFotos = () => MAX_FOTOS - fotosQueQuedan();
+  const etiquetaPrecio = () => { $("#lbl-precio").textContent = fp.elements.operacion.value === "alquiler" ? "Alquiler por mes" : "Precio"; };
+
+  function pintarActuales() {
+    const fotos = editando ? editando.fotos || [] : [];
+    $("#bloque-actuales").hidden = !fotos.length;
+    $("#fotos-actuales").innerHTML = fotos.map((f, i) => `
+      <button type="button" class="foto-actual" data-ruta="${esc(f)}" aria-pressed="${fotosQuitar.has(f)}"
+        aria-label="Foto ${i + 1}${i === 0 ? " (portada)" : ""}: ${fotosQuitar.has(f) ? "se quitará al guardar, tocá para conservarla" : "tocá para quitarla"}">
+        <img src="${esc(DB.urlFoto(f))}" alt=""><span>${fotosQuitar.has(f) ? "Se quita" : i === 0 ? "Portada" : ""}</span>
+      </button>`).join("");
+    $("#lbl-fotos").textContent = editando
+      ? `Agregar fotos (te quedan ${cupoFotos()} de ${MAX_FOTOS}; las nuevas van al final)`
+      : `Fotos (hasta ${MAX_FOTOS}, la primera es la portada)`;
+  }
+  $("#fotos-actuales").addEventListener("click", e => {
+    const b = e.target.closest("[data-ruta]");
+    if (!b) return;
+    const r = b.dataset.ruta;
+    if (fotosQuitar.has(r)) fotosQuitar.delete(r); else fotosQuitar.add(r);
+    pintarActuales();
+    revisarNuevas();
   });
 
+  // Rellena el formulario con una propiedad (o lo deja vacío para una nueva)
+  function abrirFormulario(p = null) {
+    editando = p; fotosQuitar = new Set();
+    fp.reset();
+    $("#prev-fotos").textContent = ""; errProp.textContent = "";
+    $("#dlg-prop-t").textContent = p ? `Editar propiedad ${p.codigo || ""}`.trim() : "Añadir propiedad";
+    $("#guardar-prop").textContent = p ? "Guardar cambios" : "Guardar";
+    if (p) {
+      const x = fp.elements, val = (v, d = "") => (v === null || v === undefined ? d : String(v));
+      x.codigo.value = val(p.codigo); x.operacion.value = p.operacion || "venta"; x.tipo.value = p.tipo || "Casa";
+      // Un tipo que no está en la lista (cargado por otro medio) se agrega para no perderlo al guardar
+      if (x.tipo.value !== p.tipo && p.tipo) {
+        if (![...x.tipo.options].some(o => o.value === p.tipo)) x.tipo.add(new Option(p.tipo, p.tipo));
+        x.tipo.value = p.tipo;
+      }
+      x.condicion.value = p.condicion || "nuevo";
+      x.metros.value = val(p.metros); x.anio.value = val(p.anio_construccion);
+      x.habitaciones.value = val(p.habitaciones); x.banos.value = val(p.banos);
+      x.garaje.value = p.garaje ? "si" : "no"; x.trastero.value = p.trastero ? "si" : "no";
+      x.precio.value = val(p.precio); x.moneda.value = p.moneda || "USD";
+      x.ubicacion.value = val(p.ubicacion); x.ciudad.value = val(p.ciudad); x.pais.value = val(p.pais);
+      x.descripcion.value = val(p.descripcion); x.estado.value = p.estado === "publicada" ? "publicada" : "borrador";
+    }
+    etiquetaPrecio();
+    pintarActuales();
+    dlg.showModal();
+    fp.elements.codigo.focus();
+  }
+
+  // Avisa si las fotos nuevas pasan el cupo y muestra la vista previa
+  function revisarNuevas() {
+    const fs = [...fp.elements.fotos.files];
+    errProp.textContent = fs.length > cupoFotos() ? `Podés agregar como máximo ${cupoFotos()} foto(s) más (${MAX_FOTOS} en total).` : "";
+    $("#prev-fotos").innerHTML = "";
+    fs.slice(0, Math.max(0, cupoFotos())).forEach(f => { const im = document.createElement("img"); im.alt = ""; im.src = URL.createObjectURL(f); im.onload = () => URL.revokeObjectURL(im.src); $("#prev-fotos").appendChild(im); });
+  }
+
+  $("#btn-nueva-prop").addEventListener("click", () => abrirFormulario(null));
+  $("#cancelar-prop").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("close", () => { editando = null; fotosQuitar = new Set(); });
+  fp.elements.operacion.addEventListener("change", etiquetaPrecio);
+  fp.elements.fotos.addEventListener("change", revisarNuevas);
+
+  let guardandoProp = false;
   fp.addEventListener("submit", async e => {
     e.preventDefault();
+    if (guardandoProp) return; // un solo envío a la vez
     const x = fp.elements, n = v => (v === "" ? null : Number(v));
     const d = {
       codigo: x.codigo.value.trim(), operacion: x.operacion.value, tipo: x.tipo.value, condicion: x.condicion.value,
@@ -286,7 +363,8 @@
       ubicacion: x.ubicacion.value.trim(), ciudad: x.ciudad.value.trim(), pais: x.pais.value.trim(),
       precio: Number(x.precio.value), moneda: x.moneda.value, estado: x.estado.value, descripcion: x.descripcion.value.trim()
     };
-    if (!d.descripcion) delete d.descripcion;
+    // Al crear, sin descripción no se envía el campo; al editar, vaciarla la borra
+    if (!d.descripcion) { if (editando) d.descripcion = null; else delete d.descripcion; }
     const fallo = t => { errProp.textContent = t; };
     if (!d.codigo) return fallo("Escribí el código del inmueble (por ejemplo YVY-011).");
     if (!(d.metros > 0)) return fallo("Indicá la superficie en m².");
@@ -294,19 +372,25 @@
     if (d.anio_construccion !== null && !(Number.isInteger(d.anio_construccion) && d.anio_construccion >= 1800 && d.anio_construccion <= 2100)) return fallo("El año de construcción tiene que estar entre 1800 y 2100.");
     if (x.precio.value === "" || !(d.precio >= 0)) return fallo("Indicá un precio válido.");
     if (!d.ubicacion || !d.ciudad || !d.pais) return fallo("Completá la zona, la ciudad y el país.");
+    if (!Number.isFinite(d.precio) || d.precio > 1e12) return fallo("Indicá un precio válido.");
     const files = [...x.fotos.files];
-    if (files.length > MAX_FOTOS) return fallo(`Podés subir como máximo ${MAX_FOTOS} fotos.`);
-    const btn = $("#guardar-prop");
-    btn.disabled = true; btn.textContent = "Guardando…"; errProp.textContent = "";
+    if (files.length > cupoFotos()) return fallo(`Podés agregar como máximo ${cupoFotos()} foto(s) más (${MAX_FOTOS} en total).`);
+    const btn = $("#guardar-prop"), texto = btn.textContent, prop = editando;
+    guardandoProp = true; btn.disabled = true; btn.textContent = "Guardando…"; errProp.textContent = "";
     try {
       // En modo demo las fotos quedan en el navegador: se guardan más chicas
       const blobs = await Promise.all(files.map(f => reducir(f, DB.mode === "demo" ? 1000 : 1600)));
-      const r = await DB.crearPropiedad(d, blobs);
+      const r = prop
+        ? await DB.editarPropiedad(prop, d, { quitar: [...fotosQuitar], nuevas: blobs })
+        : await DB.crearPropiedad(d, blobs);
       dlg.close();
       await cargarProps();
-      $("#props-msg").textContent = r.fallos ? `Propiedad guardada, pero ${r.fallos} foto(s) no se pudieron subir.` : d.estado === "publicada" ? "Propiedad publicada: ya aparece en la web." : "Guardada como borrador.";
+      $("#props-msg").textContent = r.fallos
+        ? `Propiedad guardada, pero ${r.fallos} foto(s) no se pudieron subir.`
+        : prop ? "Cambios guardados." + (d.estado === "publicada" ? " Ya se ven en la web." : "")
+        : d.estado === "publicada" ? "Propiedad publicada: ya aparece en la web." : "Guardada como borrador.";
     } catch (ex) { fallo(ex.message); }
-    btn.disabled = false; btn.textContent = "Guardar";
+    guardandoProp = false; btn.disabled = false; btn.textContent = texto;
   });
 
   arrancar();

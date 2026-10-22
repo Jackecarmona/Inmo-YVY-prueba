@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pruebas · YVY Capital</title>
+<style>
+  :root { --noche: #111820; --dorado: #c6a66b; --marfil: #f3f0e8; --ok: #7fbf98; --mal: #f0a596; color-scheme: dark; }
+  body { margin: 0; background: var(--noche); color: var(--marfil); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 18px 80px; }
+  h1 { font-weight: 300; margin: 0 0 6px; } h1 b { color: var(--dorado); font-weight: 600; }
+  p { color: rgba(243, 240, 232, .75); }
+  button { font: inherit; font-weight: 600; background: var(--dorado); color: var(--noche); border: 0; padding: 11px 20px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: wait; }
+  #resumen { margin: 18px 0; font-size: 1.1rem; }
+  #resumen .ok { color: var(--ok); } #resumen .mal { color: var(--mal); }
+  section { margin-top: 24px; } h2 { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--dorado); border-bottom: 1px solid rgba(198, 166, 107, .3); padding-bottom: 6px; }
+  ol { margin: 0; padding-left: 22px; } li { margin: 4px 0; } li.ok::marker { color: var(--ok); } li.mal { color: var(--mal); }
+  li small { display: block; color: rgba(243, 240, 232, .55); white-space: pre-wrap; }
+  #escenario { position: fixed; right: 0; bottom: 0; width: 1200px; height: 900px; border: 0; opacity: .01; pointer-events: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pruebas de <b>YVY Capital</b></h1>
+  <p>Comprueba el sitio de punta a punta. Mientras corre, esta pestaña usa el <b>modo demo</b>: no crea cuentas,
+     solicitudes ni propiedades en Supabase. Lo que la web tenía guardado en este navegador se respalda y se restaura al terminar.
+     Abrila con Live Server (por ejemplo <code>http://127.0.0.1:5500/pruebas/index.html</code>); tarda alrededor de un minuto.</p>
+  <button id="correr" type="button">Ejecutar todas las pruebas</button>
+  <div id="resumen" role="status" aria-live="polite"></div>
+  <div id="informe"></div>
+</main>
+<script src="pruebas.js"></script>
+</body>
+</html>

@@ -476,11 +476,29 @@
       wake();
     });
     resizeObserver.observe(container);
+    let contenedorVisible = true, tapado = false;
     const intersection = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
+      contenedorVisible = entries.some(entry => entry.isIntersecting);
+      visible = contenedorVisible && !tapado;
       wake();
     });
     intersection.observe(container);
+
+    // Adaptación YVY: el fondo es fijo y las portadas con vídeo son opacas. Mientras una portada tapa
+    // casi toda la pantalla, los rayos no se ven: se dejan de dibujar para ahorrar batería y procesador.
+    const portadas = document.querySelectorAll(".hc, .pagina-cab[data-video-fondo]");
+    if (portadas.length) {
+      const tapadas = new Set();
+      const observarPortadas = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.intersectionRect.height >= window.innerHeight * 0.85) tapadas.add(e.target); else tapadas.delete(e.target);
+        });
+        tapado = tapadas.size > 0;
+        visible = contenedorVisible && !tapado;
+        wake();
+      }, { threshold: [0, 0.25, 0.5, 0.75, 0.85, 0.9, 0.95, 1] });
+      portadas.forEach(p => observarPortadas.observe(p));
+    }
     const onVisibility = () => {
       pageVisible = document.visibilityState !== 'hidden';
       wake();

@@ -125,10 +125,12 @@ create index if not exists leads_estado_idx  on public.leads (estado);
 
 alter table public.leads enable row level security;
 
--- Cualquiera (con o sin cuenta) puede enviar el formulario
+-- Cualquiera (con o sin cuenta) puede enviar el formulario, siempre con su consentimiento.
+-- La solicitud entra como "nuevo" y sin notas: el estado y las notas internas solo los cambia el equipo.
 drop policy if exists "publico_inserta" on public.leads;
 create policy "publico_inserta" on public.leads
-  for insert to anon, authenticated with check (consentimiento = true);
+  for insert to anon, authenticated
+  with check (consentimiento = true and estado = 'nuevo' and coalesce(notas, '') = '');
 
 -- El cliente solo ve las solicitudes hechas con su email
 drop policy if exists "cliente_lee_propias" on public.leads;

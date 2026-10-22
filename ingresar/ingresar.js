@@ -7,8 +7,17 @@
   const DESTINO = { equipo: "../admin/index.html", cliente: "../cliente/index.html" };
   const ir = rol => location.replace(DESTINO[rol]);
 
-  // Si ya hay una sesión abierta, se va directo a su panel
-  DB.rolActual().then(rol => { if (rol) ir(rol); }).catch(() => {});
+  // Si ya hay una sesión abierta, se va directo a su panel. Mientras tanto (o si la redirección
+  // no ocurre) se avisa que la sesión sigue activa, en vez de mostrar el formulario como si no la hubiera.
+  DB.rolActual().then(rol => {
+    if (!rol) return;
+    const aviso = document.createElement("div");
+    aviso.className = "sesion-activa"; aviso.setAttribute("role", "status");
+    aviso.innerHTML = `<p>Ya tenés la sesión iniciada.</p><a class="btn btn--oro" href="${DESTINO[rol]}">${rol === "equipo" ? "Ir al panel" : "Ir a mi cuenta"}</a>`;
+    const caja = $(".cl-acceso .form");
+    if (caja) { [...caja.children].forEach(el => { el.hidden = true; }); caja.prepend(aviso); }
+    ir(rol);
+  }).catch(() => {});
 
   // Las credenciales de demostración del equipo están en js/config.js y en el README, no en la página
   $("#modo-ayuda").textContent = DB.mode === "demo"

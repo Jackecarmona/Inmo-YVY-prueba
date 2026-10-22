@@ -27,9 +27,12 @@
     $("#vista-panel").hidden = false;
     $("#saludo").innerHTML = "Hola" + (c.nombre ? ", <em>" + esc(c.nombre.split(" ")[0]) + "</em>" : "");
 
-    let sols = [], favs = [];
-    try { sols = await DB.misSolicitudes(c.email); } catch (ex) { console.error(ex); }
-    try { favs = await DB.favoritos(); } catch (ex) { console.error(ex); }
+    // Las tres consultas van a la vez (antes iban una detrás de otra)
+    const [sols, favs, rows] = await Promise.all([
+      DB.misSolicitudes(c.email).catch(ex => { console.error(ex); return []; }),
+      DB.favoritos().catch(ex => { console.error(ex); return []; }),
+      DB.propiedades().catch(ex => { console.error(ex); return []; })
+    ]);
 
     const activa = sols.find(s => s.estado !== "descartado");
     $("#kpis").innerHTML = `
@@ -59,14 +62,10 @@
         <p>Todavía no hay propuestas con el email <b>${esc(c.email)}</b>. Hacé una simulación y va a aparecer acá, con su informe en PDF.</p>
         <a class="btn btn--oro" href="../simulador/index.html">Hacer mi primera simulación</a>
       </div>`;
-    $$("[data-pdf]").forEach(b => b.addEventListener("click", () => window.YVYPdf.download(sols[+b.dataset.pdf])));
+    $$("[data-pdf]").forEach(b => b.addEventListener("click", () => window.YVYConPdf(b, () => window.YVYPdf.download(sols[+b.dataset.pdf]))));
 
     // Favoritos: las casas de la cartera inicial y las publicadas desde el Back Office
-    let todas = CASAS;
-    try {
-      const rows = await DB.propiedades();
-      if (rows.length && window.YVYCasaDesdeDB) todas = [...rows.map(p => YVYCasaDesdeDB(p, r => DB.urlFoto(r))), ...CASAS];
-    } catch (ex) { console.error(ex); }
+    const todas = rows.length && window.YVYCasaDesdeDB ? [...rows.map(p => YVYCasaDesdeDB(p, r => DB.urlFoto(r))), ...CASAS] : CASAS;
     pintarFavs(todas, favs);
   }
 
@@ -109,5 +108,17 @@
     }
   });
 
-  mostrarPanel();
+  // Si la sesión o el servidor no responden, se avisa en vez de dejar la página en blanco
+  const intentar = () => mostrarPanel().catch(ex => {
+    console.error(ex);
+    let aviso = $("#cl-falla");
+    if (!aviso) {
+      aviso = document.createElement("div");
+      aviso.id = "cl-falla"; aviso.className = "wrap cl-falla"; aviso.setAttribute("role", "alert");
+      $("main").prepend(aviso);
+    }
+    aviso.innerHTML = `<p>${esc(ex.message || "No pudimos cargar tu cuenta.")}</p><button class="btn btn--linea" type="button">Reintentar</button>`;
+    aviso.querySelector("button").addEventListener("click", () => { aviso.remove(); intentar(); });
+  });
+  intentar();
 })();

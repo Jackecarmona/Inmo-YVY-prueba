@@ -129,7 +129,12 @@
       <label>País<input name="pais" maxlength="80" value="Paraguay"></label>
     </div>
     <label>Descripción (opcional)<textarea name="descripcion" rows="3" placeholder="Lo que destacarías al inversor. Separá los párrafos con una línea en blanco."></textarea></label>
-    <label>Fotos (hasta 6, la primera es la portada)<input name="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+    <!-- Solo al editar: las fotos que ya tiene. Tocar una la marca para quitarla al guardar. -->
+    <div class="actuales" id="bloque-actuales" hidden>
+      <span class="actuales__t">Fotos actuales <small>(tocá una para quitarla)</small></span>
+      <div class="prev" id="fotos-actuales"></div>
+    </div>
+    <label><span id="lbl-fotos">Fotos (hasta 6, la primera es la portada)</span><input name="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
     <div class="prev" id="prev-fotos"></div>
     <label>Publicación<select name="estado"><option value="publicada">Publicada en la web</option><option value="borrador">Borrador (solo el equipo)</option></select></label>
     <p class="err" id="err-prop" role="alert"></p>
@@ -140,7 +145,6 @@
   </form>
 </dialog>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/db.js"></script>

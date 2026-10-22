@@ -40,13 +40,14 @@ Inmo-YVY-prueba/
 │   ├── config.js         ⚙️ Supabase, WhatsApp, Telegram, email, emails del equipo en modo demo
 │   ├── db.js             Base de datos (Supabase o modo demo) y sesiones
 │   ├── scoring.js        Modelo clasificador de IA: índice de idoneidad 0-100 + escenarios
-│   ├── pdf.js            Informe PDF (jsPDF)
+│   ├── pdf.js            Informe PDF (jsPDF se descarga recién al generar el informe)
 │   ├── app.js            Portada, proyectos, simulador, contacto, chatbot, animaciones
 │   ├── propiedades-data.js  Datos de las 10 residencias
 │   └── propiedades.js    Tarjetas, filtros, favoritos y ficha
 ├── assets/img/ · assets/props/   Fotos de San Bernardino y de cada residencia
 ├── assets/videos/        Vídeo y poster de la portada (licencia en CREDITOS.md)
 ├── supabase/schema.sql   Roles, solicitudes, favoritos, propiedades y fotos + seguridad (RLS)
+├── pruebas/              Pruebas automáticas (abrir pruebas/index.html con Live Server)
 └── robots.txt            Evita que Google indexe las páginas privadas
 ```
 
@@ -170,3 +171,24 @@ e impide que alguien se dé a sí mismo el rol de administrador. Pasos:
 - **Dónde no:** el Simulador y el PDF siguen en US$/€, porque calculan con esas monedas.
 - **Memoria:** la moneda elegida se recuerda (`yvy_pref_divisa`) solo si el visitante acepta las cookies de preferencias.
 - **Para mostrar un precio convertido en otra parte:** usar `<span data-precio-usd="360000">US$ 360.000</span>`, o `YVYMoneda.formatear(monto)` desde JavaScript.
+
+## Pruebas automáticas
+
+Hay 57 pruebas. Para correrlas, abrí `pruebas/index.html` con Live Server y tocá **Ejecutar todas las pruebas** (tardan unos 15 segundos).
+
+- **Qué cubren:**
+  - el inicio de sesión y los roles, incluidos los cortes por tiempo y la memoria del rol
+  - los mensajes de error de Supabase en español
+  - alta, edición y baja de propiedades con fotos
+  - favoritos, el simulador, el PDF, el chat, las cookies, la moneda y el buscador
+  - seguridad: textos maliciosos y páginas privadas
+- **No tocan la base real:** mientras corren, esa pestaña usa el modo demo (bandera `yvy_pruebas` en `js/config.js`). Para la capa de datos se usa un Supabase simulado.
+- **No pierden tus datos:** lo que la web tenía guardado en el navegador se respalda antes y se restaura al terminar.
+- **Para sumar una prueba:** `prueba("Grupo", "Qué comprueba", async () => { … })` en `pruebas/pruebas.js`.
+
+## Back Office: editar propiedades
+
+En la pestaña **Propiedades**, el botón **Editar** abre el mismo formulario del alta, relleno con los datos actuales.
+
+- **Fotos actuales:** cada una se puede marcar para quitarla, y se pueden sumar nuevas hasta tener 6 en total. Las nuevas van al final.
+- **Al guardar:** primero se suben las fotos nuevas y después se actualiza la propiedad. Las fotos quitadas se borran del almacenamiento recién cuando el cambio quedó guardado. Si algo falla, no se pierde ninguna foto.

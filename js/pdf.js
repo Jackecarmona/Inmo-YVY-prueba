@@ -151,8 +151,27 @@ window.YVYPdf = (() => {
     return "YVY-Capital-informe-" + String(lead.nombre || "inversor").toLowerCase().replace(/[^a-z0-9]+/gi, "-") + ".pdf";
   }
 
+  // jsPDF (~360 KB) se descarga recién cuando hace falta, no al abrir la página.
+  // preparar() lo adelanta en segundo plano (por ejemplo, cuando aparece el botón del PDF).
+  const JSPDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+  let carga = null;
+  function preparar() {
+    if (window.jspdf) return Promise.resolve();
+    if (!carga) {
+      carga = new Promise((ok, ko) => {
+        const s = document.createElement("script");
+        s.src = JSPDF_URL; s.async = true;
+        s.onload = () => (window.jspdf ? ok() : ko(new Error("No se pudo preparar el PDF.")));
+        s.onerror = () => { carga = null; s.remove(); ko(new Error("No se pudo descargar el generador de PDF. Revisá tu conexión e intentá de nuevo.")); };
+        document.head.appendChild(s);
+      });
+    }
+    return carga;
+  }
+
   return {
-    download(lead) { build(lead).save(fileName(lead)); },
-    blobUrl(lead) { return build(lead).output("bloburl"); }
+    preparar,
+    async download(lead) { await preparar(); build(lead).save(fileName(lead)); },
+    async blobUrl(lead) { await preparar(); return build(lead).output("bloburl"); }
   };
 })();

@@ -125,7 +125,7 @@
         <div class="pr-card__pie">
           <button class="pr-card__ver" type="button" data-abrir="${c.id}">Ver ficha</button>
           <span class="pr-card__iconos">
-            <button class="icono-btn" type="button" data-fav="${c.id}" aria-pressed="${favs.includes(c.id)}" aria-label="Guardar en favoritos">${ICONO_FAV}</button>
+            <button class="icono-btn" type="button" data-fav="${c.id}" aria-pressed="${favs.includes(c.id)}" aria-label="${favs.includes(c.id) ? "Quitar de favoritos" : "Guardar en favoritos"}">${ICONO_FAV}</button>
             <a class="icono-btn icono-btn--wa" target="_blank" rel="noopener" aria-label="Consultar por WhatsApp" href="${waLink("Hola, me interesa " + c.nombre + (c.codigo ? " (cód. " + c.codigo + ")" : "") + " (" + c.zona + ", " + ciudad(c) + "). ¿Me envían más información?")}"><svg><use href="#i-wa"/></svg></a>
           </span>
         </div>
@@ -141,7 +141,8 @@
   });
   // Llegando desde el buscador, se va directo a los resultados
   if (hayBusqueda() && !location.hash) requestAnimationFrame(() => $("#propiedades").scrollIntoView());
-  DB.favoritos().then(f => { favs = f; pintar(); }).catch(() => pintar());
+  // Los favoritos llegan después de pintar: se repinta la lista y, si hay una ficha abierta, su botón
+  DB.favoritos().then(f => { favs = f; pintar(); if (actual) pintarFav(actual.id); }).catch(() => pintar());
   pintar();
 
   // Suma las propiedades publicadas desde el Back Office, delante de la cartera inicial
@@ -170,15 +171,32 @@
     if (b) abrir(b.dataset.abrir);
   });
 
-  async function alternarFav(id, boton) {
+  // Pinta el estado de favorito en TODOS los botones de esa casa: el corazón de la tarjeta y el de la ficha
+  function pintarFav(id) {
+    const puesto = favs.includes(id);
+    $$(`[data-fav="${id}"]`).forEach(b => {
+      b.setAttribute("aria-pressed", String(puesto));
+      b.setAttribute("aria-label", puesto ? "Quitar de favoritos" : "Guardar en favoritos");
+      const texto = b.querySelector(".fav-texto");
+      if (texto) texto.textContent = puesto ? "Quitar de favoritos" : "Guardar en favoritos";
+    });
+  }
+  const enCurso = new Set(); // evita dos guardados a la vez de la misma casa (doble clic)
+  async function alternarFav(id) {
+    if (enCurso.has(id)) return;
+    enCurso.add(id);
+    $$(`[data-fav="${id}"]`).forEach(b => { b.disabled = true; });
     try {
       const puesto = await DB.alternarFavorito(id);
-      favs = puesto ? [...favs, id] : favs.filter(x => x !== id);
-      $$(`[data-fav="${id}"]`).forEach(x => x.setAttribute("aria-pressed", puesto));
+      favs = puesto ? [...favs.filter(x => x !== id), id] : favs.filter(x => x !== id);
+      pintarFav(id);
       aviso(puesto ? "Guardada en tu área de clientes." : "Quitada de favoritos.");
     } catch (err) {
       if (err.message === "sin-sesion") aviso(`<a href="${B}ingresar/index.html">Ingresá o creá tu cuenta</a> para guardar favoritos.`);
       else aviso("No se pudo guardar. Intentá de nuevo.");
+    } finally {
+      enCurso.delete(id);
+      $$(`[data-fav="${id}"]`).forEach(b => { b.disabled = false; });
     }
   }
   function aviso(html) {
@@ -232,9 +250,9 @@
       <div class="pr-cta">
         <a class="btn btn--wa" target="_blank" rel="noopener" href="${waLink("Hola, quiero agendar una visita (presencial o por videollamada) a " + c.nombre + (c.codigo ? " (cód. " + c.codigo + ")" : "") + ", " + ciudad(c) + ".")}"><svg><use href="#i-wa"/></svg>Agendar visita</a>
         ${alquiler(c) ? "" : `<button class="btn btn--oro" type="button" id="pr-simular">Simular inversión</button>`}
-        <button class="btn btn--linea" type="button" data-fav="${c.id}" aria-pressed="${favs.includes(c.id)}">Guardar en favoritos</button>
+        <button class="btn btn--linea btn-fav" type="button" data-fav="${c.id}" aria-pressed="${favs.includes(c.id)}">${ICONO_FAV}<span class="fav-texto">${favs.includes(c.id) ? "Quitar de favoritos" : "Guardar en favoritos"}</span></button>
       </div>`;
-    $("#pr-info [data-fav]").addEventListener("click", e => alternarFav(c.id, e.currentTarget));
+    $("#pr-info [data-fav]").addEventListener("click", () => alternarFav(c.id));
     const sim = $("#pr-simular");
     if (sim) sim.addEventListener("click", () => window.YVYIrAlSimulador({ capital: c.precio ? Math.round(precioUsd(c)) : 300000, moneda: "USD", financiacion: "contado" }));
     $("#pr-tab-mapa").hidden = !c.mapa;

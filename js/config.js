@@ -26,3 +26,9 @@ window.YVY_CONFIG = {
   demoEquipo: ["admin@yvycapital.com"],
   demoAdminPass: "yvy2026"
 };
+
+// Pruebas automáticas (pruebas/index.html): mientras corren, ESA pestaña usa el modo demo
+// para no crear cuentas ni solicitudes en la base real. No afecta a ningún otro visitante.
+try {
+  if (sessionStorage.getItem("yvy_pruebas") === "demo") { window.YVY_CONFIG.supabaseUrl = ""; window.YVY_CONFIG.supabaseAnonKey = ""; }
+} catch (e) { /* sin almacenamiento */ }

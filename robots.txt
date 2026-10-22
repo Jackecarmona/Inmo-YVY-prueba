@@ -3,3 +3,4 @@ Disallow: /admin/
 Disallow: /cliente/
 Disallow: /ingresar/
 Disallow: /restablecer/
+Disallow: /pruebas/

@@ -19,6 +19,17 @@
     guardar: (k, v) => { if (prefOk()) { try { localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } } }
   };
 
+  // Botón que genera un PDF: muestra que está trabajando y avisa si algo falla
+  window.YVYConPdf = async function conPdf(btn, accion) {
+    if (btn.disabled) return;
+    const texto = btn.textContent;
+    btn.disabled = true; btn.textContent = "Preparando PDF…";
+    try { await accion(); }
+    catch (ex) { console.error(ex); alert(ex.message || "No se pudo generar el PDF."); }
+    btn.disabled = false; btn.textContent = texto;
+  };
+  const conPdf = window.YVYConPdf;
+
   // Datos que otra página deja para precargar el simulador
   const PREFILL = "yvy_prefill";
   window.YVYIrAlSimulador = datos => {
@@ -70,48 +81,6 @@
     const sincronizar = () => { const o = $(`option[data-pais="${paisSel.value}"]`, prefijoSel); if (o) prefijoSel.value = o.value; };
     paisSel.addEventListener("change", sincronizar);
     sincronizar();
-  }
-
-  /* ---------- Inicio: portada con el logo de partículas (js/particulas.js) ---------- */
-  const hp = $("#hp");
-  if (hp) YVYAlTerminarIntro(() => hp.classList.add("listo"));
-
-  /* ---------- Portada en "video" con fotos (en pausa hasta tener fotos de mejor calidad) ---------- */
-  const hv = $("#hv");
-  if (hv) {
-    const escenas = $$(".hv__esc", hv), barras = $$(".hv__barras button", hv);
-    const cap = $("#hv-cap"), pausa = $("#hv-pausa");
-    const DUR = 6000;
-    let i = 0, timer = null, corriendo = !quieto;
-    function ir(n) {
-      i = (n + escenas.length) % escenas.length;
-      escenas.forEach((e, k) => e.classList.toggle("on", k === i));
-      barras.forEach((b, k) => {
-        b.classList.toggle("hecha", k < i);
-        b.classList.remove("on"); void b.offsetWidth; // reinicia la animación de la barra
-        if (k === i) b.classList.add("on");
-        b.setAttribute("aria-current", k === i ? "true" : "false");
-      });
-      if (cap) { cap.classList.remove("on"); void cap.offsetWidth; cap.textContent = escenas[i].dataset.cap; cap.classList.add("on"); }
-      programar();
-    }
-    function programar() {
-      clearTimeout(timer);
-      if (corriendo) timer = setTimeout(() => ir(i + 1), DUR);
-    }
-    function alternar(seguir) {
-      corriendo = seguir;
-      hv.classList.toggle("pausado", !corriendo);
-      pausa.setAttribute("aria-label", corriendo ? "Pausar presentación" : "Reproducir presentación");
-      pausa.setAttribute("aria-pressed", String(!corriendo));
-      programar();
-    }
-    barras.forEach((b, k) => b.addEventListener("click", () => ir(k)));
-    pausa.addEventListener("click", () => alternar(!corriendo));
-    document.addEventListener("visibilitychange", () => { if (document.hidden) clearTimeout(timer); else programar(); });
-    if (quieto) alternar(false);
-    // Arranca cuando termina la animación del logo
-    YVYAlTerminarIntro(() => { hv.classList.add("listo"); ir(0); });
   }
 
   /* ---------- Precios en la moneda elegida (js/moneda.js) ---------- */
@@ -473,10 +442,12 @@
       form.hidden = true;
       res.hidden = false;
       $("#form-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
-      $("#btn-pdf").addEventListener("click", () => window.YVYPdf.download(lead));
-      $("#btn-pdf-ver").addEventListener("click", () => {
-        $("#pdf-host").innerHTML = `<iframe class="pdf-vista" title="Informe en PDF" src="${window.YVYPdf.blobUrl(lead)}"></iframe>`;
-      });
+      // El generador de PDF se descarga en segundo plano mientras la persona lee el resultado
+      window.YVYPdf.preparar().catch(() => {});
+      $("#btn-pdf").addEventListener("click", e => conPdf(e.currentTarget, () => window.YVYPdf.download(lead)));
+      $("#btn-pdf-ver").addEventListener("click", e => conPdf(e.currentTarget, async () => {
+        $("#pdf-host").innerHTML = `<iframe class="pdf-vista" title="Informe en PDF" src="${await window.YVYPdf.blobUrl(lead)}"></iframe>`;
+      }));
       $("#btn-nueva").addEventListener("click", reiniciarForm);
     }
   }
@@ -570,7 +541,7 @@
       setTimeout(() => fn(v), 350);
     });
     // Los enlaces se guardan con dirección completa para que funcionen desde cualquier página
-    const enlace = ruta => new URL(B + ruta, location.href).href;
+    const enlace = ruta => new URL(B + ruta, document.baseURI).href;
 
     const perfil = () => estado.perfil;
     const ir = paso => { estado.paso = paso; guardarChat(); flujo[paso](); };
@@ -675,10 +646,19 @@
   /* ---------- Sesión: saludo en el menú y datos precargados ---------- */
   DB.rolActual().then(async rol => {
     if (!rol) return;
-    const enlace = $("#nav-cliente span");
-    if (rol === "equipo") { if (enlace) enlace.textContent = "Panel del equipo"; return; }
+    // Con sesión, el enlace del menú lleva directo al panel. Antes cambiaba solo el texto y seguía
+    // apuntando a la página de ingreso: al tocar "Hola, Ana" parecía que se había cerrado la sesión.
+    const nav = $("#nav-cliente"), enlace = $("#nav-cliente span");
+    if (rol === "equipo") {
+      if (nav) nav.href = B + "admin/index.html";
+      if (enlace) enlace.textContent = "Panel del equipo";
+      return;
+    }
+    if (nav) nav.href = B + "cliente/index.html";
     const c = await DB.clienteActual();
     if (enlace) enlace.textContent = c && c.nombre ? "Hola, " + c.nombre.split(" ")[0] : "Mi cuenta";
+    if (nav) nav.setAttribute("aria-label", "Mi cuenta" + (c && c.nombre ? " de " + c.nombre : ""));
+    if (nav && document.body.dataset.pagina === "cliente") nav.setAttribute("aria-current", "page");
     if (form && c) {
       if (!$("#nombre").value && c.nombre) $("#nombre").value = c.nombre;
       if (!$("#email").value) $("#email").value = c.email;
