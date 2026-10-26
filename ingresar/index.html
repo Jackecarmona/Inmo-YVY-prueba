@@ -17,31 +17,17 @@
 <main>
   <section class="wrap cl-acceso">
     <div>
-      <span class="eyebrow">Acceso privado</span>
-      <h1 class="h-seccion">Ingresá a tu <em>panel</em></h1>
-      <p class="lead">Este acceso es solo para el equipo de YVY Capital. Si buscás información sobre una propiedad, <a href="../index.html#solicitar">completá el formulario</a> y te escribimos en el día.</p>
+      <h1 class="h-seccion">Ingresar</h1>
     </div>
 
-    <!-- Los clientes no tienen cuenta: dejan sus datos en el formulario, el simulador o el chat
-         y aparecen como consultas en el panel. Aquí solo entra el equipo. -->
+    <!-- Solo para el equipo: los clientes dejan sus datos en el formulario, el simulador o el chat
+         y aparecen como consultas en el panel. Las contraseñas se gestionan desde Supabase. -->
     <div class="form">
       <form class="cl-form" id="form-entrar" novalidate>
-        <div class="campo"><label for="e-email">Email</label><input type="email" id="e-email" autocomplete="username" placeholder="maria@email.com"></div>
+        <div class="campo"><label for="e-email">Email</label><input type="email" id="e-email" autocomplete="username"></div>
         <div class="campo"><label for="e-pass">Contraseña</label><input type="password" id="e-pass" autocomplete="current-password"></div>
-        <button class="olvido-enlace" type="button" id="btn-olvido">¿Olvidaste tu contraseña?</button>
         <p class="error" id="e-error" role="alert"></p>
         <button class="btn btn--oro" type="submit" id="btn-entrar">Ingresar</button>
-      </form>
-
-      <!-- Contraseña olvidada: se pide el email y Supabase envía el enlace a restablecer/ -->
-      <form class="cl-form" id="form-olvido" novalidate hidden aria-labelledby="olvido-t">
-        <h2 class="olvido-titulo" id="olvido-t" tabindex="-1">Restablecer tu contraseña</h2>
-        <p class="cl-ayuda">Escribí el email de tu cuenta y te enviamos un enlace para elegir una contraseña nueva.</p>
-        <div class="campo"><label for="o-email">Email</label><input type="email" id="o-email" autocomplete="username" placeholder="maria@email.com"></div>
-        <p class="error" id="o-error" role="alert"></p>
-        <p class="ok-msg" id="o-ok" role="status" hidden></p>
-        <button class="btn btn--oro" type="submit" id="btn-olvido-enviar">Enviarme el enlace</button>
-        <button class="olvido-enlace" type="button" id="btn-olvido-volver">‹ Volver a Ingresar</button>
       </form>
     </div>
   </section>
