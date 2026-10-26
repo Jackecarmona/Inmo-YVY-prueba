@@ -197,7 +197,7 @@
       pintarFav(id);
       aviso(puesto ? "Guardada en tu área de clientes." : "Quitada de favoritos.");
     } catch (err) {
-      if (err.message === "sin-sesion") aviso(`<a href="${B}ingresar/index.html">Ingresá o creá tu cuenta</a> para guardar favoritos.`);
+      if (err.message === "sin-sesion") aviso("Para guardar favoritos necesitás una cuenta de cliente.");
       else aviso("No se pudo guardar. Intentá de nuevo.");
     } finally {
       enCurso.delete(id);
@@ -253,8 +253,9 @@
       ${tags("Interior", c.interior)}
       ${tags("Exterior y amenities", c.exterior)}
       <div class="pr-cta">
+        <a class="btn btn--oro" href="${B}index.html?interes=${encodeURIComponent(c.id)}#solicitar">Solicitar información</a>
         <a class="btn btn--wa" target="_blank" rel="noopener" href="${waLink("Hola, quiero agendar una visita (presencial o por videollamada) a " + c.nombre + (c.codigo ? " (cód. " + c.codigo + ")" : "") + ", " + ciudad(c) + ".")}"><svg><use href="#i-wa"/></svg>Agendar visita</a>
-        ${alquiler(c) ? "" : `<button class="btn btn--oro" type="button" id="pr-simular">Simular inversión</button>`}
+        ${alquiler(c) ? "" : `<button class="btn btn--linea" type="button" id="pr-simular">Simular inversión</button>`}
         <button class="btn btn--linea btn-fav" type="button" data-fav="${c.id}" aria-pressed="${favs.includes(c.id)}">${ICONO_FAV}<span class="fav-texto">${favs.includes(c.id) ? "Quitar de favoritos" : "Guardar en favoritos"}</span></button>
       </div>`;
     $("#pr-info [data-fav]").addEventListener("click", () => alternarFav(c.id));

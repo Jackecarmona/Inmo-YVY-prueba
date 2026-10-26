@@ -34,6 +34,11 @@
       <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     </defs></svg>`;
 
+  // La web pública no muestra ningún acceso al login: el equipo entra por /admin (o /login, /backoffice).
+  // El enlace "Mi cuenta" del menú solo aparece si ya hay una sesión abierta (js/app.js).
+  // El botón principal lleva al formulario de solicitud: el de Inicio, o el de Nosotros si estás ahí.
+  const CTA = pagina === "inicio" ? "#solicitar" : pagina === "nosotros" ? "#contacto" : B + "index.html#solicitar";
+
   const header = `
     <header class="header" id="header">
       <div class="wrap header__in">
@@ -44,8 +49,8 @@
         <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav">Menú</button>
         <nav class="nav" id="nav">
           ${NAV.map(([id, href, txt]) => `<a href="${B}${href}"${id === pagina ? ' aria-current="page"' : ""}>${txt}</a>`).join("")}
-          <a class="nav__cliente" href="${B}ingresar/index.html" id="nav-cliente"><svg><use href="#i-user"/></svg><span>Ingresar</span></a>
-          <a class="btn btn--oro" href="${B}nosotros/index.html#contacto">Contacto</a>
+          <a class="nav__cliente" href="${B}cliente/index.html" id="nav-cliente" hidden><svg><use href="#i-user"/></svg><span>Mi cuenta</span></a>
+          <a class="btn btn--oro" href="${CTA}">Solicitar información</a>
         </nav>
       </div>
     </header>`;
@@ -56,7 +61,7 @@
         <div>
           <a class="logo" href="${B}index.html">${logo()}<span><span class="logo__nombre">YVY CAPITAL</span><span class="logo__desc">PARAGUAY · REAL ESTATE · INVESTMENT</span></span></a>
           <nav class="footer__links" aria-label="Enlaces">
-            ${NAV.map(([, href, txt]) => `<a href="${B}${href}">${txt}</a>`).join("")}<a href="${B}ingresar/index.html">Área de clientes</a>
+            ${NAV.map(([, href, txt]) => `<a href="${B}${href}">${txt}</a>`).join("")}
           </nav>
         </div>
         <nav class="footer__legal" aria-label="Información legal">

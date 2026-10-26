@@ -176,6 +176,8 @@ html { scroll-padding-top: 100px; }
 .nav .btn { padding: 12px 18px; }
 .nav__cliente { display: inline-flex !important; align-items: center; gap: 8px; color: var(--dorado) !important; }
 .nav__cliente svg { width: 16px; height: 16px; }
+/* Sin sesión no hay acceso al panel ni favoritos a la vista (js/app.js agrega .con-sesion) */
+.nav__cliente[hidden], html:not(.con-sesion) [data-fav] { display: none !important; }
 .menu-btn { display: none; background: none; border: 1px solid var(--linea); color: var(--marfil); border-radius: var(--radio); padding: 9px 14px; font: inherit; font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
 @media (max-width: 1320px) {
   .menu-btn { display: block; }

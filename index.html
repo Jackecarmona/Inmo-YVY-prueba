@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#111820">
-<title>YVY Capital</title>
+<title>YVY Capital · Invertí en Paraguay en dólares</title>
 <script>document.documentElement.classList.add("js");try{var c=JSON.parse(localStorage.getItem("yvy_consentimiento"));if(!c||c.v!==1||Date.now()-new Date(c.fecha)>3.2e10)throw 0}catch(e){document.documentElement.classList.add("con-galletas")}</script>
-<meta name="description" content="Residencias en San Bernardino y proyectos sobre plano en Asunción para inversores de España, Argentina y Brasil.">
+<meta name="description" content="Casas frente al Lago Ypacaraí y departamentos sobre plano en Asunción con 10 % de entrada. Pedí información y te asesoramos sin que tengas que viajar.">
 <link rel="preload" href="assets/fuentes/montserrat.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fuentes/manrope.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/styles.css">
@@ -37,15 +37,15 @@
 
     <div class="wrap hc__contenido">
       <span class="eyebrow">San Bernardino · Asunción · Paraguay</span>
-      <h1 class="hp__titulo hc__titulo" id="hc-titulo" aria-label="La tierra de las grandes oportunidades">
-        <span class="hp__linea"><span>La tierra</span></span>
-        <span class="hp__linea"><span>de las grandes</span></span>
-        <span class="hp__linea"><span><em>oportunidades</em></span></span>
+      <h1 class="hp__titulo hc__titulo" id="hc-titulo" aria-label="Invertí en Paraguay en dólares">
+        <span class="hp__linea"><span>Invertí en</span></span>
+        <span class="hp__linea"><span>Paraguay,</span></span>
+        <span class="hp__linea"><span><em>en dólares</em></span></span>
       </h1>
-      <p class="lead">Residencias frente al Lago Ypacaraí y proyectos sobre plano en Asunción, seleccionados para inversores de España, Argentina y Brasil.</p>
+      <p class="lead">Casas frente al Lago Ypacaraí y departamentos sobre plano en Asunción con 10 % de entrada. Te asesoramos de principio a fin, sin que tengas que viajar.</p>
       <div class="hero__ctas">
-        <a class="btn btn--oro" href="simulador/index.html">Calcular mi inversión</a>
-        <a class="btn btn--linea" href="propiedades/index.html">Ver todas las propiedades</a>
+        <a class="btn btn--oro" href="#solicitar">Solicitar información</a>
+        <a class="btn btn--linea" href="propiedades/index.html">Ver propiedades disponibles</a>
       </div>
     </div>
 
@@ -123,6 +123,10 @@
   <!-- ACCESOS -->
   <section class="banda">
     <div class="wrap">
+      <div class="cabecera">
+        <span class="eyebrow">Cómo empezar</span>
+        <h2 class="h-seccion">Elegí tu forma de <em>invertir</em></h2>
+      </div>
       <div class="accesos">
         <a class="acceso" href="proyectos/index.html">
           <img src="assets/img/urbanizacion.jpg" alt="" loading="lazy">
@@ -149,20 +153,42 @@
     </div>
   </section>
 
-  <!-- CIERRE -->
-  <section class="banda">
-    <div class="wrap">
-      <div class="cta-final">
-        <div>
-          <span class="eyebrow">Hablá con nosotros</span>
-          <h2 style="margin-top:18px">Agendá una videollamada con un asesor</h2>
-          <p class="lead">Respondemos en el día, estés en Madrid, Buenos Aires o São Paulo.</p>
-        </div>
-        <div class="hero__ctas">
-          <a class="btn btn--oro" href="nosotros/index.html#contacto">Contactar</a>
-          <a class="btn btn--linea" href="ingresar/index.html">Área de clientes</a>
+  <!-- SOLICITUD: el objetivo de la página. Lo maneja el formulario de contacto de js/app.js
+       (se guarda como consulta en Supabase); "Propiedad de interés" se completa con la cartera. -->
+  <section class="banda" id="solicitar">
+    <div class="wrap contacto">
+      <div>
+        <span class="eyebrow">Hablá con un asesor</span>
+        <h2 class="h-seccion">Pedí información o agendá una <em>visita</em></h2>
+        <p class="lead">Dejanos tus datos y te escribimos en el día, estés en Madrid, Buenos Aires o São Paulo. Te mandamos fotos, precios y la documentación de la propiedad que elijas.</p>
+        <div class="canales">
+          <a class="canal" id="canal-wa" href="#" target="_blank" rel="noopener"><span><small>¿Preferís escribirnos ya?</small><b>WhatsApp <span id="wa-num">+595 981 000 000</span></b></span><svg width="22" height="22"><use href="#i-wa"/></svg></a>
         </div>
       </div>
+      <form class="form" id="form-contacto" novalidate>
+        <h3>Solicitar información</h3>
+        <p class="form__sub">Sin compromiso. Respondemos en el día.</p>
+        <div class="campos">
+          <div class="campo campo--full"><label for="c-nombre">Nombre</label><input type="text" id="c-nombre" autocomplete="name"></div>
+          <div class="campo"><label for="c-tel">WhatsApp</label><span class="tel"><select id="c-pre" data-prefijos aria-label="Prefijo del país"></select><input type="tel" id="c-tel" autocomplete="tel-national" inputmode="tel" placeholder="600 000 000"></span></div>
+          <div class="campo"><label for="c-email">Email</label><input type="email" id="c-email" autocomplete="email"></div>
+          <div class="trampa" aria-hidden="true"><label for="c-web">No completar este campo</label><input type="text" id="c-web" tabindex="-1" autocomplete="off"></div>
+          <div class="campo campo--full">
+            <label for="c-interes">Propiedad de interés</label>
+            <select id="c-interes" data-cartera>
+              <option>Todavía no sé: quiero asesoramiento</option>
+              <option>Una casa en San Bernardino</option>
+              <option>Un departamento sobre plano en Asunción</option>
+              <option>Un lote</option>
+              <option>Agendar una visita</option>
+            </select>
+          </div>
+          <label class="check campo--full"><input type="checkbox" id="c-consentimiento"><span>Acepto que YVY Capital guarde mis datos para responder mi consulta. <a href="privacidad/index.html">Política de privacidad</a></span></label>
+        </div>
+        <p class="error" id="c-error" role="alert"></p>
+        <button class="btn btn--oro" type="submit" style="margin-top:8px">Solicitar información</button>
+        <div id="c-ok" hidden></div>
+      </form>
     </div>
   </section>
 </main>

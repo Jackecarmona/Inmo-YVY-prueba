@@ -675,14 +675,26 @@
     const { d } = await abrir("propiedades/index.html#vista-lago");
     await hasta(() => d.querySelector("#pr-info [data-fav]") && d.querySelector("#pr-info [data-fav]").textContent.trim() === "Quitar de favoritos", "estado de la ficha");
   });
-  prueba("Favoritos en la ficha", "Sin sesión, el botón de la ficha invita a ingresar y no cambia", async () => {
+  prueba("Favoritos en la ficha", "Sin sesión no hay favoritos a la vista y la ficha lleva a solicitar información", async () => {
     limpiar();
-    const { d } = await abrir("propiedades/index.html");
+    const { d, w } = await abrir("propiedades/index.html");
     await hasta(() => d.querySelector('.pr-card [data-abrir="horizon-home"]'), "tarjetas");
     d.querySelector('.pr-card [data-abrir="horizon-home"]').click();
-    d.querySelector("#pr-info [data-fav]").click();
-    await hasta(() => /Ingresá o creá tu cuenta/.test((d.getElementById("pr-aviso") || {}).textContent || ""), "aviso para ingresar");
-    igual(d.querySelector("#pr-info [data-fav]").textContent.trim(), "Guardar en favoritos", "texto");
+    igual(w.getComputedStyle(d.querySelector("#pr-info [data-fav]")).display, "none", "botón de favoritos oculto");
+    const pedir = [...d.querySelectorAll("#pr-info a")].find(a => /Solicitar información/.test(a.textContent));
+    afirmar(pedir && /index\.html\?interes=horizon-home#solicitar$/.test(pedir.getAttribute("href")), "enlace a solicitar información");
+  });
+  prueba("Captación", "La web pública no tiene enlaces al login y el formulario de Inicio trae la casa elegida", async () => {
+    limpiar();
+    const { d } = await abrir("index.html?interes=la-suiza");
+    afirmar(![...d.querySelectorAll("a")].some(a => /ingresar\//.test(a.getAttribute("href") || "") && a.offsetParent), "hay un enlace visible al login");
+    afirmar(d.getElementById("nav-cliente").hidden, "«Mi cuenta» visible sin sesión");
+    igual(d.getElementById("c-interes").value, "Casa con vista en La Suiza", "propiedad de interés");
+    escribir(d.getElementById("c-nombre"), "Marta"); escribir(d.getElementById("c-tel"), "600 111 222");
+    d.getElementById("c-consentimiento").checked = true;
+    d.getElementById("form-contacto").requestSubmit();
+    await hasta(() => JSON.parse(localStorage.getItem("yvy_leads") || "[]").length === 1, "consulta guardada");
+    igual(JSON.parse(localStorage.getItem("yvy_leads"))[0].mensaje, "Casa con vista en La Suiza", "mensaje");
   });
 
   /* =====================================================================

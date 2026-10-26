@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/login", "destination": "/ingresar/", "permanent": false },
+    { "source": "/backoffice", "destination": "/ingresar/", "permanent": false }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

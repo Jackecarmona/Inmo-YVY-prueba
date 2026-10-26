@@ -53,9 +53,9 @@
   if (fabWa) fabWa.href = waLink("Hola YVY Capital, quiero información para invertir en Paraguay.");
   if ($("#wa-num")) {
     $("#wa-num").textContent = waNum;
-    $("#mail-txt").textContent = cfg.email;
+    if ($("#mail-txt")) $("#mail-txt").textContent = cfg.email;
     $("#canal-wa").href = waLink("Hola YVY Capital, quiero información para invertir en Paraguay.");
-    $("#canal-tg").href = cfg.telegram;
+    if ($("#canal-tg")) $("#canal-tg").href = cfg.telegram;
   }
 
   /* ---------- Teléfono con prefijo de país ---------- */
@@ -455,7 +455,7 @@
           <a class="btn btn--wa" target="_blank" rel="noopener" href="${waLink("Hola, soy " + lead.nombre + ". Hice el simulador y me recomendó: " + ev.producto.nombre + ". Quiero hablar con un asesor.")}"><svg><use href="#i-wa"/></svg>Hablar con un asesor</a>
           <button class="btn btn--linea" type="button" id="btn-nueva">Nueva simulación</button>
         </div>
-        <p class="nota">${guardado ? (DB.mode === "demo" ? "Solicitud guardada (modo demo: en este navegador). " : "Solicitud registrada. Un asesor te contactará en el día. ") : "No pudimos guardar tu solicitud; escribinos por WhatsApp. "}Podés verla en tu <a href="${B}ingresar/index.html">área de clientes</a> con este mismo email. Estimación orientativa, no constituye asesoramiento financiero.</p>
+        <p class="nota">${guardado ? (DB.mode === "demo" ? "Solicitud guardada (modo demo: en este navegador). " : "Solicitud registrada. Un asesor te contactará en el día. ") : "No pudimos guardar tu solicitud; escribinos por WhatsApp. "}Estimación orientativa, no constituye asesoramiento financiero.</p>
         <div id="pdf-host"></div>`;
       form.hidden = true;
       res.hidden = false;
@@ -471,6 +471,16 @@
   }
 
   /* ---------- Formulario de contacto ---------- */
+  // En Inicio, "Propiedad de interés" suma cada casa de la cartera; ?interes=<id> la deja elegida
+  const selCartera = $("[data-cartera]");
+  if (selCartera && window.YVY_CASAS) {
+    const grupo = document.createElement("optgroup");
+    grupo.label = "Residencias en San Bernardino";
+    YVY_CASAS.forEach(c => grupo.appendChild(new Option(c.nombre + " · " + c.zona, c.nombre, false, false)));
+    selCartera.appendChild(grupo);
+    const pedida = YVY_CASAS.find(c => c.id === new URLSearchParams(location.search).get("interes"));
+    if (pedida) selCartera.value = pedida.nombre;
+  }
   const formContacto = $("#form-contacto");
   if (formContacto) formContacto.addEventListener("submit", async e => {
     e.preventDefault();
@@ -664,9 +674,11 @@
   /* ---------- Sesión: saludo en el menú y datos precargados ---------- */
   DB.rolActual().then(async rol => {
     if (!rol) return;
-    // Con sesión, el enlace del menú lleva directo al panel. Antes cambiaba solo el texto y seguía
-    // apuntando a la página de ingreso: al tocar "Hola, Ana" parecía que se había cerrado la sesión.
+    // Sin sesión la web es solo para captar consultas: el enlace al panel y los favoritos
+    // quedan ocultos y aparecen recién acá, cuando hay alguien con la sesión abierta.
+    document.documentElement.classList.add("con-sesion");
     const nav = $("#nav-cliente"), enlace = $("#nav-cliente span");
+    if (nav) nav.hidden = false;
     if (rol === "equipo") {
       if (nav) nav.href = B + "admin/index.html";
       if (enlace) enlace.textContent = "Panel del equipo";
