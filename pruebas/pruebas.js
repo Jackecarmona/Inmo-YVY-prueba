@@ -289,12 +289,12 @@
   /* =====================================================================
      3. ACCESO, ROLES Y CONTRASEÑA (páginas reales en modo demo)
      ===================================================================== */
-  prueba("Acceso y roles", "La página de acceso es mínima: sin crear cuenta ni «¿Olvidaste tu contraseña?»", async () => {
+  prueba("Acceso y roles", "La página de acceso no permite crear cuentas: solo ingresa el equipo", async () => {
     limpiar();
     const { d } = await abrir("ingresar/index.html");
-    afirmar(!d.getElementById("form-crear") && !d.getElementById("form-olvido"), "siguen el registro o la contraseña olvidada");
-    afirmar(!/Crear cuenta|Olvidaste/i.test(d.querySelector("main").textContent), "aparece «Crear cuenta» u «Olvidaste»");
-    igual(d.querySelectorAll("main input").length, 2, "solo email y contraseña");
+    afirmar(!d.getElementById("form-crear") && !d.getElementById("tab-crear"), "sigue el formulario de registro");
+    afirmar(!/Crear cuenta/i.test(d.querySelector("main").textContent), "aparece «Crear cuenta»");
+    afirmar(d.getElementById("btn-olvido") && d.getElementById("form-olvido"), "falta «¿Olvidaste tu contraseña?»");
   });
   prueba("Acceso y roles", "Una cuenta de cliente antigua no entra: se cierra y se avisa", async () => {
     limpiar();
@@ -340,6 +340,15 @@
     const { d, w } = await abrir("ingresar/index.html");
     const t = d.querySelector("main").textContent;
     afirmar(!t.includes(w.YVY_CONFIG.demoAdminPass) && !/admin@/i.test(t), "aparecen credenciales del equipo");
+  });
+  prueba("Acceso y roles", "«¿Olvidaste tu contraseña?» abre el formulario y en demo explica que no hay emails", async () => {
+    limpiar();
+    const { d } = await abrir("ingresar/index.html");
+    escribir(d.getElementById("e-email"), "ana@x.com");
+    d.getElementById("btn-olvido").click();
+    afirmar(!d.getElementById("form-olvido").hidden && d.getElementById("o-email").value === "ana@x.com", "formulario");
+    d.getElementById("form-olvido").requestSubmit();
+    await hasta(() => /modo demo/.test(d.getElementById("o-error").textContent), "aviso del modo demo");
   });
   prueba("Acceso y roles", "Restablecer: sin venir del email no deja cambiar nada", async () => {
     limpiar();
