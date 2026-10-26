@@ -1,33 +1,25 @@
-// Acceso único: el mismo formulario lleva al área de clientes o al panel del equipo según el email.
-// La página no explica la existencia del panel del equipo: eso lo sabe solo el equipo.
+// Acceso privado del equipo al Back Office. Los clientes ya no tienen cuenta: dejan sus datos
+// en el formulario, el simulador o el chat. Si entra una cuenta de cliente antigua, se cierra.
+// Las credenciales de demostración del equipo están en js/config.js y en el README, no en la página.
 (() => {
   const DB = window.YVYDB;
   const $ = s => document.querySelector(s);
   const emailOk = e => /^\S+@\S+\.\S+$/.test(e);
-  const DESTINO = { equipo: "../admin/index.html", cliente: "../cliente/index.html" };
-  const ir = rol => location.replace(DESTINO[rol]);
+  const PANEL = "../admin/index.html";
+  const SOLO_EQUIPO = "Este acceso es solo para el equipo. Para consultar por una propiedad, completá el formulario de la página de inicio.";
 
-  // Si ya hay una sesión abierta, se va directo a su panel. Mientras tanto (o si la redirección
-  // no ocurre) se avisa que la sesión sigue activa, en vez de mostrar el formulario como si no la hubiera.
-  DB.rolActual().then(rol => {
+  // Con la sesión del equipo abierta se va directo al panel; mientras tanto se avisa,
+  // en vez de mostrar el formulario como si no hubiera sesión.
+  DB.rolActual().then(async rol => {
     if (!rol) return;
+    if (rol !== "equipo") { await DB.clienteSalir(); return; }
     const aviso = document.createElement("div");
     aviso.className = "sesion-activa"; aviso.setAttribute("role", "status");
-    aviso.innerHTML = `<p>Ya tenés la sesión iniciada.</p><a class="btn btn--oro" href="${DESTINO[rol]}">${rol === "equipo" ? "Ir al panel" : "Ir a mi cuenta"}</a>`;
+    aviso.innerHTML = `<p>Ya tenés la sesión iniciada.</p><a class="btn btn--oro" href="${PANEL}">Ir al panel</a>`;
     const caja = $(".cl-acceso .form");
     if (caja) { [...caja.children].forEach(el => { el.hidden = true; }); caja.prepend(aviso); }
-    ir(rol);
+    location.replace(PANEL);
   }).catch(() => {});
-
-  // Las credenciales de demostración del equipo están en js/config.js y en el README, no en la página
-  $("#modo-ayuda").textContent = DB.mode === "demo"
-    ? "Modo demo: la cuenta se guarda solo en este navegador."
-    : "Te enviaremos un email para confirmar la cuenta.";
-
-  const tabs = [...document.querySelectorAll(".cl-tabs [role=tab]")];
-  tabs.forEach(t => t.addEventListener("click", () => {
-    tabs.forEach(x => { x.setAttribute("aria-selected", x === t); $("#" + x.getAttribute("aria-controls")).hidden = x !== t; });
-  }));
 
   // Botón "Reenviar email de confirmación", con una espera entre envíos (Supabase limita los emails por hora)
   function ofrecerReenvio(junto, email) {
@@ -69,17 +61,20 @@
     if (!emailOk(email)) return (err.textContent = "Escribí un email válido.");
     if (!pass) return (err.textContent = "Escribí tu contraseña.");
     btn.disabled = true; btn.textContent = "Ingresando…";
-    try { ir(await DB.entrar(email, pass)); }
-    catch (ex) {
+    try {
+      if (await DB.entrar(email, pass) === "equipo") return location.replace(PANEL);
+      await DB.clienteSalir();
+      err.textContent = SOLO_EQUIPO; btn.disabled = false; btn.textContent = "Ingresar";
+    } catch (ex) {
       err.textContent = ex.message; btn.disabled = false; btn.textContent = "Ingresar";
       if (ex.sinConfirmar) ofrecerReenvio(err, email);
     }
   });
 
   /* ---------- Contraseña olvidada ---------- */
-  const fOlvido = $("#form-olvido"), fEntrar = $("#form-entrar"), pestanas = $(".cl-tabs");
+  const fOlvido = $("#form-olvido"), fEntrar = $("#form-entrar");
   const verOlvido = mostrar => {
-    fOlvido.hidden = !mostrar; fEntrar.hidden = mostrar; pestanas.hidden = mostrar;
+    fOlvido.hidden = !mostrar; fEntrar.hidden = mostrar;
     if (mostrar) {
       $("#o-email").value = $("#e-email").value.trim();
       $("#o-error").textContent = ""; $("#o-ok").hidden = true;
@@ -109,34 +104,6 @@
     } catch (ex) {
       err.textContent = ex.message;
       enviandoOlvido = false; btn.disabled = false; btn.textContent = "Enviarme el enlace";
-    }
-  });
-
-  let creando = false;
-  $("#form-crear").addEventListener("submit", async e => {
-    e.preventDefault();
-    if (creando) return;
-    const err = $("#c-error"), nombre = $("#c-nombre").value.trim(), email = $("#c-email").value.trim(), pass = $("#c-pass").value;
-    const btn = e.target.querySelector("button[type=submit]");
-    err.textContent = "";
-    if (nombre.length < 2) return (err.textContent = "Escribí tu nombre.");
-    if (!emailOk(email)) return (err.textContent = "Escribí un email válido.");
-    if (pass.length < 8) return (err.textContent = "La contraseña necesita al menos 8 caracteres.");
-    // Un solo envío a la vez: cada intento repetido gasta uno de los pocos emails por hora
-    creando = true; btn.disabled = true; btn.textContent = "Creando cuenta…";
-    try {
-      const r = await DB.clienteRegistrar(nombre, email, pass);
-      if (r.confirmar) {
-        const ayuda = $("#modo-ayuda");
-        ayuda.textContent = `Listo. Te enviamos un email a ${email} para confirmar la cuenta. Revisá también el correo no deseado.`;
-        btn.textContent = "Cuenta creada";
-        ofrecerReenvio(ayuda, email);
-        return;
-      }
-      ir("cliente");
-    } catch (ex) {
-      err.textContent = ex.message;
-      creando = false; btn.disabled = false; btn.textContent = "Crear cuenta";
     }
   });
 })();

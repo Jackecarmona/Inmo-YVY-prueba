@@ -289,17 +289,24 @@
   /* =====================================================================
      3. ACCESO, ROLES Y CONTRASEÑA (páginas reales en modo demo)
      ===================================================================== */
-  prueba("Acceso y roles", "Crear cuenta de cliente lleva a «Mi cuenta» y «Salir» vuelve a Ingresar", async () => {
+  prueba("Acceso y roles", "La página de acceso no permite crear cuentas: solo ingresa el equipo", async () => {
     limpiar();
-    let { d } = await abrir("ingresar/index.html");
-    d.getElementById("tab-crear").click();
-    escribir(d.getElementById("c-nombre"), "Ana Prueba"); escribir(d.getElementById("c-email"), "ana@prueba.com"); escribir(d.getElementById("c-pass"), "clave-segura-1");
-    const nav = navegar(); d.getElementById("form-crear").requestSubmit(); ({ d } = await nav);
-    igual(ruta(), "cliente/index.html", "página");
-    await hasta(() => !d.getElementById("vista-panel").hidden, "que se vea el panel");
-    afirmar(/Ana/.test(d.getElementById("saludo").textContent), "saludo: " + d.getElementById("saludo").textContent);
-    const nav2 = navegar(); d.getElementById("btn-salir").click(); await nav2;
-    igual(ruta(), "ingresar/index.html", "después de salir");
+    const { d } = await abrir("ingresar/index.html");
+    afirmar(!d.getElementById("form-crear") && !d.getElementById("tab-crear"), "sigue el formulario de registro");
+    afirmar(!/Crear cuenta/i.test(d.querySelector("main").textContent), "aparece «Crear cuenta»");
+    afirmar(d.querySelector('main a[href="../index.html#solicitar"]'), "falta el enlace al formulario de consultas");
+  });
+  prueba("Acceso y roles", "Una cuenta de cliente antigua no entra: se cierra y se avisa", async () => {
+    limpiar();
+    let { w } = await abrir("ingresar/index.html");
+    await w.YVYDB.clienteRegistrar("Ana", "ana@prueba.com", "clave-segura-1");
+    await w.YVYDB.clienteSalir();
+    const { d } = await abrir("ingresar/index.html");
+    escribir(d.getElementById("e-email"), "ana@prueba.com"); escribir(d.getElementById("e-pass"), "clave-segura-1");
+    d.getElementById("form-entrar").requestSubmit();
+    await hasta(() => /solo para el equipo/.test(d.getElementById("e-error").textContent), "aviso");
+    igual(ruta(), "ingresar/index.html", "sigue en Ingresar");
+    afirmar(!localStorage.getItem("yvy_cliente_demo"), "la sesión del cliente quedó abierta");
   });
   prueba("Acceso y roles", "El equipo entra al Back Office; un cliente que abre el Back Office vuelve a su cuenta", async () => {
     limpiar();
@@ -328,22 +335,11 @@
     await hasta(() => /incorrectos/.test(d.getElementById("e-error").textContent), "el mensaje");
     afirmar(!d.getElementById("btn-entrar").disabled, "el botón quedó bloqueado");
   });
-  prueba("Acceso y roles", "Validaciones del registro: nombre, email y contraseña corta", async () => {
-    limpiar();
-    const { d } = await abrir("ingresar/index.html");
-    d.getElementById("tab-crear").click();
-    const f = d.getElementById("form-crear"), err = d.getElementById("c-error");
-    f.requestSubmit(); afirmar(/nombre/.test(err.textContent), "sin nombre: " + err.textContent);
-    escribir(d.getElementById("c-nombre"), "Ana"); escribir(d.getElementById("c-email"), "ana@"); f.requestSubmit();
-    afirmar(/email válido/.test(err.textContent), "email malo: " + err.textContent);
-    escribir(d.getElementById("c-email"), "ana@x.com"); escribir(d.getElementById("c-pass"), "1234"); f.requestSubmit();
-    afirmar(/8 caracteres/.test(err.textContent), "clave corta: " + err.textContent);
-  });
-  prueba("Acceso y roles", "La página de ingreso no muestra credenciales ni el panel del equipo", async () => {
+  prueba("Acceso y roles", "La página de ingreso no muestra credenciales", async () => {
     limpiar();
     const { d, w } = await abrir("ingresar/index.html");
     const t = d.querySelector("main").textContent;
-    afirmar(!t.includes(w.YVY_CONFIG.demoAdminPass) && !/admin@|Equipo YVY|panel del equipo/i.test(t), "aparece información del equipo");
+    afirmar(!t.includes(w.YVY_CONFIG.demoAdminPass) && !/admin@/i.test(t), "aparecen credenciales del equipo");
   });
   prueba("Acceso y roles", "«¿Olvidaste tu contraseña?» abre el formulario y en demo explica que no hay emails", async () => {
     limpiar();
@@ -627,13 +623,12 @@
     await hasta(() => !d.getElementById("vista-panel").hidden, "sigue en el panel");
     afirmar(localStorage.getItem("yvy_cliente_demo"), "se perdió la sesión");
   });
-  prueba("Área de clientes", "Abrir Ingresar con la sesión abierta avisa y vuelve al panel", async () => {
+  prueba("Acceso y roles", "Abrir Ingresar con la sesión del equipo abierta vuelve al panel", async () => {
     limpiar();
     let { w } = await abrir("ingresar/index.html");
-    await w.YVYDB.clienteRegistrar("Ana", "ana@prueba.com", "clave-segura-1");
+    await w.YVYDB.entrar("admin@yvycapital.com", w.YVY_CONFIG.demoAdminPass);
     await abrir("ingresar/index.html");
-    await hasta(() => ruta() === "cliente/index.html", "vuelve a Mi cuenta");
-    afirmar(localStorage.getItem("yvy_cliente_demo"), "se perdió la sesión");
+    await hasta(() => ruta() === "admin/index.html", "vuelve al panel");
   });
   prueba("Favoritos en la ficha", "El botón de la ficha cambia a «Quitar de favoritos» y vuelve, sincronizado con la tarjeta", async () => {
     limpiar();
@@ -683,6 +678,17 @@
     igual(w.getComputedStyle(d.querySelector("#pr-info [data-fav]")).display, "none", "botón de favoritos oculto");
     const pedir = [...d.querySelectorAll("#pr-info a")].find(a => /Solicitar información/.test(a.textContent));
     afirmar(pedir && /index\.html\?interes=horizon-home#solicitar$/.test(pedir.getAttribute("href")), "enlace a solicitar información");
+  });
+  prueba("Captación", "Las consultas del formulario, el simulador y el chat aparecen en el panel con su origen", async () => {
+    limpiar();
+    let { w } = await abrir("index.html");
+    for (const [nombre, fuente] of [["Forma", "contacto"], ["Simu", "formulario"], ["Charla", "chatbot"]])
+      await w.YVYDB.insertLead({ nombre, telefono: "+34 600 111 222", fuente, consentimiento: true });
+    await w.YVYDB.entrar("admin@yvycapital.com", w.YVY_CONFIG.demoAdminPass);
+    const { d } = await abrir("admin/index.html");
+    await hasta(() => d.querySelectorAll("#tbody tr").length === 3, "las 3 consultas en la tabla");
+    const t = d.getElementById("tbody").textContent;
+    afirmar(/Contacto/.test(t) && /Simulador/.test(t) && /Chatbot/.test(t), "orígenes: " + t.replace(/\s+/g, " ").slice(0, 200));
   });
   prueba("Captación", "La web pública no tiene enlaces al login y el formulario de Inicio trae la casa elegida", async () => {
     limpiar();
