@@ -24,7 +24,7 @@
     const buscar = zona.querySelector(".hc__buscar"), cab = 96;
     if (buscar) {
       const libre = buscar.offsetTop - cab - 24;
-      lado = ancho ? Math.min(W * 0.27, libre, 400) : Math.min(W * 0.5, 190);
+      lado = ancho ? Math.min(W * 0.27, libre, 400) : Math.min(W * 0.34, 130);
       cx = ancho ? W * 0.76 : W / 2;
       cy = ancho ? cab + libre / 2 : cab + 12 + lado / 2;
     } else {

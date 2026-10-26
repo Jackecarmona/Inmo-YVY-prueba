@@ -1068,8 +1068,8 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 /* Sombra suave detrás del logo para que el oro se lea sobre el vídeo */
 .hc__velo::before { content: ""; position: absolute; inset: 0; background: radial-gradient(26% 38% at 76% 42%, rgba(17, 24, 32, .62), transparent 72%); }
 @media (max-width: 899px) {
-  .hc__velo::before { background: radial-gradient(50% 22% at 50% 22%, rgba(17, 24, 32, .6), transparent 75%); }
-  .hc__contenido { padding-top: 250px; }
+  .hc__velo::before { background: radial-gradient(42% 16% at 50% 18%, rgba(17, 24, 32, .6), transparent 75%); }
+  .hc__contenido { padding-top: 190px; } /* lugar para el logo de partículas (130 px, js/particulas.js) */
 }
 
 /* ---------- Cabeceras de las páginas interiores con vídeo (js/video-fondo.js) ---------- */
