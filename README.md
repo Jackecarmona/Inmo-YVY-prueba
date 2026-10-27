@@ -128,7 +128,7 @@ Configuración (una vez):
 2. En Vercel → el proyecto → **Settings → Environment Variables**, agregar `OPENROUTER_API_KEY` con esa clave, marcando Production, Preview y Development.
 3. Volver a desplegar (Deployments → ⋯ → Redeploy): las variables nuevas no se aplican a despliegues anteriores.
 
-Opcionales: `OPENROUTER_MODEL` (por defecto `nvidia/nemotron-3-super-120b-a12b:free`) y `SITE_URL` (cabecera `HTTP-Referer`). Para probarlo en la computadora: copiar `.env.example` como `.env` (no se sube a GitHub) y usar `vercel dev`; con el servidor estático simple el chat muestra el aviso de WhatsApp.
+Opcionales: `OPENROUTER_MODEL` (por defecto `nvidia/nemotron-3.5-lightning:free`) y `SITE_URL` (cabecera `HTTP-Referer`). Para probarlo en la computadora: copiar `.env.example` como `.env` (no se sube a GitHub) y usar `vercel dev`; con el servidor estático simple el chat muestra el aviso de WhatsApp.
 
 ## Antes de publicar
 

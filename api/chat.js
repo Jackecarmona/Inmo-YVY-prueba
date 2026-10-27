@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const MODELO = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b:free";
+const MODELO = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free";
 const SITIO = process.env.SITE_URL || "https://yvy-three.vercel.app";
 const MAX_MENSAJES = 16, MAX_CARACTERES = 800, LIMITE_MS = 25000;
 
