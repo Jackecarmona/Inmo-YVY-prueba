@@ -588,7 +588,8 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .fab--bot { background: var(--oro-grad); color: var(--noche); border-color: transparent; }
 .chat {
   position: fixed; z-index: 80; right: calc(22px + env(safe-area-inset-right, 0px)); bottom: calc(160px + env(safe-area-inset-bottom, 0px));
-  width: min(380px, calc(100vw - 32px)); max-height: min(560px, calc(100vh - 200px));
+  /* Alto máximo = pantalla − botones flotantes (160) − cabecera fija (85) − margen: nunca tapa la cabecera */
+  width: min(380px, calc(100vw - 32px)); max-height: min(560px, calc(100vh - 260px)); max-height: min(560px, calc(100dvh - 260px));
   background: rgba(17, 24, 32, .95); backdrop-filter: blur(16px); color: var(--marfil); border: 1px solid var(--linea); box-shadow: 0 30px 70px rgba(0, 0, 0, .6);
   display: flex; flex-direction: column; overflow: hidden; animation: aparecer .3s ease;
 }
@@ -920,7 +921,7 @@ a.canal:hover { padding-inline: 14px; color: var(--dorado-claro); }
 .con-galletas body { padding-bottom: var(--galletas-alto, 0px); }
 .con-galletas .hc { min-height: max(640px, calc(100svh - var(--galletas-alto, 0px))); }
 .con-galletas .flotantes { bottom: calc(22px + var(--galletas-alto, 0px)); }
-.con-galletas .chat { bottom: calc(160px + var(--galletas-alto, 0px)); max-height: min(560px, calc(100vh - 200px - var(--galletas-alto, 0px))); }
+.con-galletas .chat { bottom: calc(160px + var(--galletas-alto, 0px)); max-height: min(560px, calc(100dvh - 260px - var(--galletas-alto, 0px))); }
 .con-galletas .pr-aviso { bottom: calc(26px + var(--galletas-alto, 0px)); }
 
 .galletas { position: fixed; z-index: 90; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0px);
