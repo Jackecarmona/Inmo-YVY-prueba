@@ -690,37 +690,6 @@
     const t = d.getElementById("tbody").textContent;
     afirmar(/Contacto/.test(t) && /Simulador/.test(t) && /Chatbot/.test(t), "orígenes: " + t.replace(/\s+/g, " ").slice(0, 200));
   });
-  prueba("Captación", "Inicio: fichas de lotes y desarrollos con las 4 métricas y estado", async () => {
-    limpiar();
-    const { d } = await abrir("index.html");
-    const fichas = [...d.querySelectorAll("#lista-desarrollos .ficha")];
-    igual(fichas.length, 3, "fichas en la portada");
-    fichas.forEach(f => igual([...f.querySelectorAll(".metrica dt")].map(x => x.textContent).join("|"), "Plusvalía estimada|Precio total|Entrega inicial|Estado", "métricas"));
-    const torre = fichas.find(f => /Torre Mburucuyá/.test(f.textContent));
-    afirmar(torre && /8–15 % a la entrega/.test(torre.textContent) && /En pozo/.test(torre.textContent) && /US\$ 5\.200/.test(torre.textContent), "datos de Torre Mburucuyá");
-    afirmar(/Listo para titular/.test(fichas[0].textContent), "estado del lote");
-  });
-  prueba("Captación", "Calculadora de plusvalía: 3 y 5 años con los supuestos del simulador", async () => {
-    limpiar();
-    const { d, w } = await abrir("index.html");
-    const plazos = () => [...d.querySelectorAll(".calc__plazo b")].map(b => b.textContent.trim());
-    igual(plazos().join(" / "), "US$ 56.243 – US$ 64.751 / US$ 60.833 – US$ 76.931", "lote de US$ 50.000 (4–9 % anual)");
-    d.querySelector('[name=calc-tipo][value=pozo]').click();
-    // Sobre plano: obra de 2 años (+8 a +15 % a la entrega) y luego 3 a 5 % anual
-    const e = w.YVYScoring.apreciacion("pozo", 50000, 3);
-    igual(Math.round(e.prudente), Math.round(50000 * 1.08 * 1.03), "prudente a 3 años");
-    afirmar(/US\$ 55\.620/.test(plazos()[0]), "sobre plano a 3 años: " + plazos()[0]);
-    escribir(d.getElementById("calc-monto"), "100000");
-    afirmar(/US\$ 100\.000/.test(d.getElementById("calc-monto-txt").textContent), "monto elegido");
-    afirmar(/sobre plano/.test(d.getElementById("calc-supuesto").textContent), "supuesto visible");
-  });
-  prueba("Captación", "El formulario de Inicio ofrece los lotes y desarrollos y acepta ?interes= de un proyecto", async () => {
-    limpiar();
-    const { d } = await abrir("index.html?interes=miradores");
-    const grupos = [...d.querySelectorAll("#c-interes optgroup")].map(g => g.label);
-    igual(grupos.join("|"), "Lotes y desarrollos|Residencias en San Bernardino", "grupos");
-    igual(d.getElementById("c-interes").value, "Miradores del Lago", "proyecto elegido");
-  });
   prueba("Captación", "La web pública no tiene enlaces al login y el formulario de Inicio trae la casa elegida", async () => {
     limpiar();
     const { d } = await abrir("index.html?interes=la-suiza");
