@@ -100,10 +100,11 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: MODELO,
         messages: [{ role: "system", content: instrucciones() }, ...mensajes],
-        max_tokens: 1200,
+        max_tokens: 2500,
         temperature: 0.4,
-        // Es un modelo que "razona": se pide poco razonamiento y que no lo devuelva
-        reasoning: { effort: "low", exclude: true }
+        // Es un modelo que "razona": con el razonamiento activo gastaba todos los tokens en pensar
+        // y la respuesta llegaba vacía o cortada. Para preguntas cortas no hace falta.
+        reasoning: { enabled: false, exclude: true }
       })
     });
     const datos = await r.json().catch(() => ({}));
