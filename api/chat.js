@@ -107,13 +107,19 @@ module.exports = async (req, res) => {
       })
     });
     const datos = await r.json().catch(() => ({}));
+    // "detalle" (código y mensaje de OpenRouter, sin la clave) ayuda a diagnosticar: clave inválida,
+    // modelo inexistente o la opción de modelos gratuitos desactivada en openrouter.ai/settings/privacy
+    const detalle = d => [r.status, d && d.error && (d.error.message || d.error)].filter(Boolean).join(" · ").slice(0, 300);
     if (!r.ok) {
       console.error("OpenRouter", r.status, datos && datos.error);
       const ocupado = r.status === 429;
-      return res.status(ocupado ? 429 : 502).json({ error: ocupado ? "El asistente está muy solicitado. Probá en un momento." : "El asistente no pudo responder." });
+      return res.status(ocupado ? 429 : 502).json({ error: ocupado ? "El asistente está muy solicitado. Probá en un momento." : "El asistente no pudo responder.", detalle: detalle(datos) });
     }
     const texto = (datos.choices && datos.choices[0] && datos.choices[0].message && datos.choices[0].message.content || "").trim();
-    if (!texto) return res.status(502).json({ error: "El asistente no pudo responder." });
+    if (!texto) {
+      console.error("OpenRouter sin texto", JSON.stringify(datos).slice(0, 500));
+      return res.status(502).json({ error: "El asistente no pudo responder.", detalle: "respuesta vacía · " + ((datos.choices && datos.choices[0] && datos.choices[0].finish_reason) || "sin motivo") });
+    }
     return res.status(200).json({ respuesta: texto });
   } catch (e) {
     console.error("Chat:", e.name === "AbortError" ? "tiempo agotado" : e.message);
