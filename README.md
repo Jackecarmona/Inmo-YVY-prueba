@@ -113,6 +113,17 @@ Gana la de mayor puntaje y se proyectan dos escenarios (prudente y optimista) co
 gastos de compra 3,5 %, IRP efectivo 4 % del alquiler, vacancia, gestión y plusvalía.
 Como mejora futura se puede entrenar un clasificador real (por ejemplo, un árbol de decisión) con los datos que se vayan guardando en Supabase.
 
+## Portada para inversores
+
+La portada está orientada a inversores en lotes y desarrollos:
+
+- **Título y propuesta de valor**: «Hacé crecer tu capital con lotes y desarrollos de alta plusvalía en Paraguay» · entrada desde el 10 % · plusvalía estimada en USD · título de propiedad a tu nombre. Se evitan promesas («garantizada», «multiplicá») que la empresa no puede asegurar.
+- **Por qué invertir en Paraguay**: cuatro tarjetas con ícono (estabilidad, 10/10/10, crecimiento urbano, repatriación según la Ley 117/91).
+- **Lotes y desarrollos**: fichas con plusvalía estimada, precio total, entrega inicial y estado («En pozo» / «Listo para titular»). Los datos están en `js/proyectos-data.js` y los usan la portada, la página Proyectos, el formulario de Inicio y el asistente con IA.
+- **Calculadora de plusvalía**: tipo de inversión y monto → valor a 3 y 5 años, escenario prudente y optimista. Usa `YVYScoring.apreciacion()`, con los mismos supuestos que el simulador (`js/scoring.js`).
+- **3 pasos para el inversor extranjero**: elegir el lote, firma a distancia y pago inicial, titulación ante escribano e inscripción en el Registro Público.
+- Después vienen las 10 residencias de San Bernardino, los accesos y el formulario «Solicitar información».
+
 ## Asistente con IA (OpenRouter)
 
 El chat del botón dorado combina dos cosas:

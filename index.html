@@ -37,15 +37,15 @@
 
     <div class="wrap hc__contenido">
       <span class="eyebrow">San Bernardino · Asunción · Paraguay</span>
-      <h1 class="hp__titulo hc__titulo" id="hc-titulo" aria-label="La tierra de las grandes oportunidades">
-        <span class="hp__linea"><span>La tierra</span></span>
-        <span class="hp__linea"><span>de las grandes</span></span>
-        <span class="hp__linea"><span><em>oportunidades</em></span></span>
+      <h1 class="hp__titulo hc__titulo hc__titulo--largo" id="hc-titulo" aria-label="Hacé crecer tu capital con lotes y desarrollos de alta plusvalía en Paraguay">
+        <span class="hp__linea"><span>Hacé crecer tu capital</span></span>
+        <span class="hp__linea"><span>con lotes y desarrollos</span></span>
+        <span class="hp__linea"><span><em>de alta plusvalía</em> en Paraguay</span></span>
       </h1>
-      <p class="lead">Casas frente al Lago Ypacaraí y departamentos sobre plano en Asunción con 10 % de entrada. Te asesoramos de principio a fin, sin que tengas que viajar.</p>
+      <p class="lead hc__valor"><span>Entrada desde el 10 %</span><span>Plusvalía estimada en USD</span><span>Título de propiedad a tu nombre</span></p>
       <div class="hero__ctas">
         <a class="btn btn--oro" href="#solicitar">Solicitar información</a>
-        <a class="btn btn--linea" href="propiedades/index.html">Ver propiedades disponibles</a>
+        <a class="btn btn--linea" href="#desarrollos">Ver lotes y desarrollos</a>
       </div>
     </div>
 
@@ -90,7 +90,117 @@
     </div>
   </div>
 
-  <!-- DESTACADAS -->
+  <!-- POR QUÉ PARAGUAY: cuatro razones con ícono y un dato -->
+  <section class="banda banda--marfil" id="por-que">
+    <div class="wrap">
+      <div class="cabecera">
+        <span class="eyebrow">Por qué invertir en Paraguay</span>
+        <h2 class="h-seccion">Un mercado en dólares, con impuestos <em>bajos</em></h2>
+      </div>
+      <div class="razones">
+        <article class="razon">
+          <svg class="razon__icono" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 38h32M12 38V24m8 14V18m8 20V22m8 16V12"/><path d="m10 16 9-6 8 5 11-7"/></svg>
+          <h3>Estabilidad económica</h3>
+          <p>Grado de inversión desde 2024 y una de las inflaciones más bajas de la región, con meta del 4 %.</p>
+        </article>
+        <article class="razon">
+          <svg class="razon__icono" viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="7" width="30" height="34" rx="2"/><path d="M16 16h16M16 23h16M16 30h9"/><circle cx="33" cy="33" r="6"/><path d="m31 35 4-4"/></svg>
+          <h3>Impuestos bajos (10/10/10)</h3>
+          <p>IVA, renta empresarial y renta personal del 10 %. Sobre el alquiler, unos 4 % efectivos.</p>
+        </article>
+        <article class="razon">
+          <svg class="razon__icono" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40h36M10 40V22h8v18M18 40V12h12v28M30 40V26h8v14"/><path d="M22 18h4M22 24h4M22 30h4"/></svg>
+          <h3>Crecimiento urbano sostenido</h3>
+          <p>Más de 60.000 nuevos residentes al año y un metro cuadrado medio de 1.697 US$ en Asunción.</p>
+        </article>
+        <article class="razon">
+          <svg class="razon__icono" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="16"/><path d="M8 24h32M24 8c5 5 5 27 0 32M24 8c-5 5-5 27 0 32"/><path d="m34 6 6 2-2 6"/></svg>
+          <h3>Repatriación de capitales</h3>
+          <p>La Ley de Inversiones 117/91 garantiza al extranjero el mismo trato y la libre transferencia de ganancias.</p>
+        </article>
+      </div>
+      <div class="seccion-pie"><a class="enlace-oro" href="invertir/index.html">Cómo invertir siendo extranjero <svg><use href="#i-flecha"/></svg></a></div>
+    </div>
+  </section>
+
+  <!-- LOTES Y DESARROLLOS: fichas con métricas (js/proyectos-data.js, se pintan en js/app.js) -->
+  <section class="banda" id="desarrollos">
+    <div class="wrap">
+      <div class="cabecera">
+        <span class="eyebrow">Lotes y desarrollos</span>
+        <h2 class="h-seccion">Oportunidades con <em>plusvalía</em> estimada</h2>
+        <p class="lead">Cada ficha muestra lo que mira un inversor: plusvalía estimada, precio total, entrega inicial y estado del proyecto.</p>
+      </div>
+      <div class="proyectos" id="lista-desarrollos"></div>
+      <div class="seccion-pie"><a class="enlace-oro" href="proyectos/index.html">Ver todos los proyectos <svg><use href="#i-flecha"/></svg></a></div>
+    </div>
+  </section>
+
+  <!-- CALCULADORA DE PLUSVALÍA (js/app.js + YVYScoring.apreciacion) -->
+  <section class="banda banda--marfil" id="calculadora">
+    <div class="wrap calc">
+      <div class="calc__txt">
+        <span class="eyebrow">Calculadora de plusvalía</span>
+        <h2 class="h-seccion">¿Cuánto puede valer tu inversión en <em>3 y 5 años</em>?</h2>
+        <p class="lead">Elegí el tipo de inversión y el monto. Te mostramos un escenario prudente y uno optimista de revalorización del inmueble.</p>
+        <p class="calc__nota">Estimación orientativa, antes de gastos de compra (3–4 %) e impuestos. No incluye renta ni constituye asesoramiento financiero; la plusvalía pasada no garantiza resultados futuros.</p>
+      </div>
+      <form class="calc__form" id="calc" onsubmit="return false">
+        <fieldset class="calc__tipos">
+          <legend>Tipo de inversión</legend>
+          <label><input type="radio" name="calc-tipo" value="lote" checked><span>Lote</span></label>
+          <label><input type="radio" name="calc-tipo" value="pozo"><span>Sobre plano</span></label>
+          <label><input type="radio" name="calc-tipo" value="terminado"><span>Terminado</span></label>
+        </fieldset>
+        <label class="calc__monto" for="calc-monto">
+          <span>Monto de la inversión</span>
+          <output id="calc-monto-txt" for="calc-monto">US$ 50.000</output>
+        </label>
+        <input type="range" id="calc-monto" min="10000" max="300000" step="5000" value="50000" aria-describedby="calc-supuesto">
+        <div class="calc__res" id="calc-res" aria-live="polite"></div>
+        <p class="calc__supuesto" id="calc-supuesto"></p>
+        <div class="calc__ctas">
+          <button class="btn btn--oro" type="button" id="calc-simular">Recibir mi propuesta en PDF</button>
+          <a class="btn btn--linea" href="#solicitar">Hablar con un asesor</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- PASOS PARA INVERSORES EXTRANJEROS -->
+  <section class="banda" id="pasos">
+    <div class="wrap">
+      <div class="cabecera">
+        <span class="eyebrow">Seguridad para el inversor extranjero</span>
+        <h2 class="h-seccion">Comprá desde tu país en <em>3 pasos</em></h2>
+      </div>
+      <ol class="camino">
+        <li class="camino__paso">
+          <span class="camino__num">01</span>
+          <h3>Seleccioná tu lote</h3>
+          <p>Lo recorrés por videollamada y recibís plano, fotos, precio y la situación del título antes de decidir.</p>
+        </li>
+        <li class="camino__paso">
+          <span class="camino__num">02</span>
+          <h3>Firma digital y pago inicial</h3>
+          <p>Reservás con un boleto firmado a distancia y transferís la entrega inicial a una cuenta a nombre del desarrollador.</p>
+        </li>
+        <li class="camino__paso">
+          <span class="camino__num">03</span>
+          <h3>Titulación a tu nombre</h3>
+          <p>Un escribano público firma la escritura, con tu presencia o con poder notarial, y la inscribe en el Registro Público a tu nombre.</p>
+        </li>
+      </ol>
+      <ul class="garantias">
+        <li>Verificación del título antes de reservar</li>
+        <li>Escribano público matriculado</li>
+        <li>Inscripción en la Dirección General de los Registros Públicos</li>
+        <li>Pagos documentados en USD</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- DESTACADAS: las residencias de San Bernardino -->
   <section class="banda">
     <div class="wrap">
       <div class="cabecera">
@@ -100,23 +210,6 @@
       </div>
       <div class="dest-grid" id="destacadas"></div>
       <div class="seccion-pie"><a class="enlace-oro" href="propiedades/index.html">Ver las 10 residencias <svg><use href="#i-flecha"/></svg></a></div>
-    </div>
-  </section>
-
-  <!-- CIFRAS -->
-  <section class="banda banda--marfil">
-    <div class="wrap">
-      <div class="cabecera">
-        <span class="eyebrow">Por qué Paraguay</span>
-        <h2 class="h-seccion">Un mercado en dólares, con impuestos <em>bajos</em></h2>
-      </div>
-      <div class="cifras">
-        <div class="cifra"><strong>1.697 <span class="unidad">US$/m²</span></strong><p>Precio medio en Asunción (marzo 2025), unos 1.471 €/m²</p></div>
-        <div class="cifra"><strong>10 <span class="unidad">%</span></strong><p>De entrada para comprar sobre plano. El resto en cuotas al promotor, sin banco</p></div>
-        <div class="cifra"><strong>4 <span class="unidad">%</span></strong><p>Impuesto efectivo sobre el alquiler (fiscalidad 10-10-10)</p></div>
-        <div class="cifra"><strong>+60.000</strong><p>Nuevos residentes al año; 29.765 solo en el primer semestre de 2026</p></div>
-      </div>
-      <div class="seccion-pie"><a class="enlace-oro" href="invertir/index.html">Cómo invertir siendo extranjero <svg><use href="#i-flecha"/></svg></a></div>
     </div>
   </section>
 
@@ -177,9 +270,9 @@
             <label for="c-interes">Propiedad de interés</label>
             <select id="c-interes" data-cartera>
               <option>Todavía no sé: quiero asesoramiento</option>
+              <option>Un lote en San Bernardino</option>
+              <option>Un departamento sobre plano</option>
               <option>Una casa en San Bernardino</option>
-              <option>Un departamento sobre plano en Asunción</option>
-              <option>Un lote</option>
               <option>Agendar una visita</option>
             </select>
           </div>
@@ -200,6 +293,7 @@
 <script src="js/db.js"></script>
 <script src="js/scoring.js"></script>
 <script src="js/propiedades-data.js"></script>
+<script src="js/proyectos-data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/portada.js"></script>
 <script src="js/particulas.js"></script>

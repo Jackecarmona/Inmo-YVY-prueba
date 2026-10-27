@@ -151,6 +151,21 @@ window.YVYScoring = (() => {
     };
   }
 
+  // Solo la revalorización del inmueble (sin renta ni gastos), con los mismos supuestos que project():
+  // en obra, la plusvalía se suma a la entrega; después, la anual. La usa la calculadora de la portada.
+  function apreciacion(key, valorUsd, years) {
+    const s = PRODUCTS[key].supuestos;
+    const run = (plus, plusObra) => {
+      let v = valorUsd;
+      for (let y = 1; y <= years; y++) {
+        if (y <= s.obra) { if (y === s.obra) v *= 1 + (plusObra || 0); }
+        else v *= 1 + plus;
+      }
+      return v;
+    };
+    return { prudente: run(s.plusP, s.plusObraP), optimista: run(s.plusO, s.plusObraO) };
+  }
+
   function evaluate(input) {
     const c = classify(input);
     return { ...c, producto: PRODUCTS[c.top], proyeccion: project(c.top, c.capital_usd, input.horizonte) };
@@ -159,5 +174,5 @@ window.YVYScoring = (() => {
   const usd = n => "US$ " + Math.round(n).toLocaleString("es");
   const pct = x => (x * 100).toLocaleString("es", { maximumFractionDigits: 1 }) + " %";
 
-  return { PRODUCTS, classify, project, evaluate, toUsd, usd, pct };
+  return { PRODUCTS, classify, project, apreciacion, evaluate, toUsd, usd, pct };
 })();

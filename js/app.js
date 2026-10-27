@@ -125,9 +125,11 @@
     }).catch(() => {}));
   }
 
-  /* ---------- Proyectos a futuro (ejemplos ficticios) ---------- */
-  const listaProy = $("#lista-proyectos");
-  if (listaProy) {
+  /* ---------- Lotes y desarrollos (ejemplos ficticios, js/proyectos-data.js) ---------- */
+  // Fichas con las métricas clave del inversor: plusvalía estimada, precio total, entrega inicial y estado.
+  // Página Proyectos: todas, con filtros (#lista-proyectos). Portada: lotes y sobre plano (#lista-desarrollos).
+  const listaProy = $("#lista-proyectos"), listaDes = $("#lista-desarrollos");
+  if (listaProy || listaDes) {
     const render = seed => `
       <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Render ilustrativo del edificio">
         <rect width="400" height="250" fill="#1a2430"/>
@@ -142,35 +144,11 @@
         </g>
         <path d="M40 196c30-18 60-18 90 0M300 196c25-14 50-14 70 0" stroke="#9fb1a4" fill="none" stroke-width="1.4"/>
       </svg>`;
-    const PROYECTOS = [
-      { id: "lomas", tipo: "lote", nombre: "Lomas del Ypacaraí", loc: "San Bernardino · Barrio Villa Rosa", img: "assets/img/urbanizacion.jpg",
-        precio: 24000, specs: [["450 m²", "Superficie"], ["15×30", "Medidas"], ["Lista", "Escritura"]],
-        renta: ["Plusvalía estimada", "4–9 % anual"], anticipo: 2400, cuotas: "60 cuotas de US$ 360",
-        det: { "Amenities": "Club house, acceso al lago, seguridad 24 h", "Estado": "Calles, luz y agua habilitadas", "Gastos adicionales": "3–4 % (escribanía e inscripción)", "Renta": "Sin renta hasta construir", "Impuestos": "Inmobiliario < 0,2 % anual" } },
-      { id: "mburucuya", tipo: "pozo", nombre: "Torre Mburucuyá", loc: "Asunción · Villa Morra", render: 0,
-        precio: 52000, specs: [["42 m²", "Superficie"], ["1", "Dormitorio"], ["2028", "Entrega"]],
-        renta: ["Renta temporal estimada", "8–12 % bruto"], anticipo: 5200, cuotas: "36 cuotas de US$ 1.300",
-        det: { "Amenities": "Piscina, cowork, gimnasio, lavandería", "Estado": "Obra en estructura (35 %)", "Gastos adicionales": "IVA incluido; escritura 3–4 %", "Gestión": "20 % de lo cobrado; vacancia 8–15 %", "Impuestos": "IRP efectivo 4 % del alquiler" } },
-      { id: "costalago", tipo: "terminado", nombre: "Residencias Costa Lago", loc: "San Bernardino · Costanera", img: "assets/img/lago-costa.jpg",
-        precio: 145000, specs: [["85 m²", "Superficie"], ["2", "Dormitorios"], ["1", "Cochera"]],
-        renta: ["Renta estimada", "6–8,5 % bruto"], anticipo: 43500, cuotas: "30 % y 24 cuotas, o contado",
-        det: { "Amenities": "Muelle privado, piscina, quincho", "Estado": "Terminado, listo para alquilar", "Gastos adicionales": "3–4 % (escribanía e inscripción)", "Gestión": "15 % de lo cobrado; vacancia 5–10 %", "Impuestos": "IRP efectivo 4 % del alquiler" } },
-      { id: "miradores", tipo: "lote", nombre: "Miradores del Lago", loc: "San Bernardino · Ruta a Altos", img: "assets/img/avenida.jpg",
-        precio: 48000, specs: [["800 m²", "Superficie"], ["Vista", "al lago"], ["Lista", "Escritura"]],
-        renta: ["Plusvalía estimada", "5–9 % anual"], anticipo: 9600, cuotas: "48 cuotas de US$ 800",
-        det: { "Amenities": "Barrio cerrado, senderos, área verde", "Estado": "Infraestructura 80 %", "Gastos adicionales": "3–4 % (escribanía e inscripción)", "Renta": "Sin renta hasta construir", "Impuestos": "Inmobiliario < 0,2 % anual" } },
-      { id: "aurora", tipo: "pozo", nombre: "Edificio Aurora", loc: "San Bernardino · Centro", render: 14,
-        precio: 46000, specs: [["36 m²", "Superficie"], ["Studio", "Tipología"], ["2027", "Entrega"]],
-        renta: ["Renta temporal estimada", "8–11 % bruto"], anticipo: 4600, cuotas: "30 cuotas de US$ 1.380",
-        det: { "Amenities": "Rooftop con vista al lago, piscina", "Estado": "Excavación y fundaciones", "Gastos adicionales": "IVA incluido; escritura 3–4 %", "Gestión": "20 % de lo cobrado; vacancia 10–15 %", "Impuestos": "IRP efectivo 4 % del alquiler" } },
-      { id: "casalago", tipo: "terminado", nombre: "Casa Ypacaraí", loc: "San Bernardino · Barrio cerrado", img: "assets/img/lago-ypacarai.jpg",
-        precio: 230000, specs: [["210 m²", "Cubiertos"], ["3", "Dormitorios"], ["2", "Cocheras"]],
-        renta: ["Renta estimada", "6–8 % bruto"], anticipo: 230000, cuotas: "Contado",
-        det: { "Amenities": "Piscina, jardín, acceso a playa", "Estado": "Terminada, amueblada", "Gastos adicionales": "3–4 % (escribanía e inscripción)", "Gestión": "15 % de lo cobrado; vacancia 5–10 %", "Impuestos": "IRP efectivo 4 % del alquiler" } }
-    ];
+    const PROYECTOS = window.YVY_PROYECTOS || [];
     const TAG = { lote: "Lote", pozo: "Sobre plano", terminado: "Listo para rentar" };
-    function pintarProyectos(filtro) {
-      listaProy.innerHTML = PROYECTOS.filter(p => filtro === "todos" || p.tipo === filtro).map(p => `
+    const ESTADO = { pozo: "En pozo", titular: "Listo para titular" };
+    // Las cuatro métricas van arriba; la renta se muestra aparte solo si no repite la plusvalía (lotes)
+    const fichaProyecto = p => `
         <article class="ficha">
           <div class="ficha__img">
             ${p.img ? `<img src="${B}${p.img}" alt="${esc(p.nombre)}" loading="lazy">` : render(p.render)}
@@ -179,9 +157,14 @@
           </div>
           <div class="ficha__body">
             <div><p class="ficha__loc">${esc(p.loc)}</p><h3>${esc(p.nombre)}</h3></div>
-            <p class="ficha__precio"><span data-precio-usd="${p.precio}">US$ ${num(p.precio)}</span> <small>· ${p.anticipo >= p.precio ? "contado" : `entrada <span data-precio-usd="${p.anticipo}">US$ ${num(p.anticipo)}</span>`}</small></p>
+            <dl class="metricas">
+              <div class="metrica metrica--oro"><dt>Plusvalía estimada</dt><dd>${esc(p.plusvalia)}</dd></div>
+              <div class="metrica"><dt>Precio total</dt><dd><span data-precio-usd="${p.precio}">US$ ${num(p.precio)}</span></dd></div>
+              <div class="metrica"><dt>Entrega inicial</dt><dd>${p.anticipo >= p.precio ? "Contado" : `<span data-precio-usd="${p.anticipo}">US$ ${num(p.anticipo)}</span>`}</dd></div>
+              <div class="metrica"><dt>Estado</dt><dd><span class="estado estado--${p.estado}">${ESTADO[p.estado]}</span></dd></div>
+            </dl>
             <div class="specs">${p.specs.map(s => `<div><b>${s[0]}</b>${s[1]}</div>`).join("")}</div>
-            <div class="renta"><span>${p.renta[0]}</span><b>${p.renta[1]}</b></div>
+            ${p.renta[0] === "Plusvalía estimada" ? "" : `<div class="renta"><span>${p.renta[0]}</span><b>${p.renta[1]}</b></div>`}
             <details>
               <summary>Ficha completa</summary>
               <dl>
@@ -194,20 +177,69 @@
               <button class="btn btn--linea" type="button" data-simular="${p.precio}" data-tipo="${p.tipo}">Simular</button>
             </div>
           </div>
-        </article>`).join("");
-    }
-    pintarProyectos("todos");
-    pintarPrecios(listaProy);
-    $$("[data-filtro]").forEach(ch => ch.addEventListener("click", () => {
-      $$("[data-filtro]").forEach(c => c.setAttribute("aria-pressed", c === ch));
-      pintarProyectos(ch.dataset.filtro);
-      pintarPrecios(listaProy);
-    }));
-    listaProy.addEventListener("click", e => {
+        </article>`;
+    const alSimular = e => {
       const b = e.target.closest("[data-simular]");
       if (!b) return;
       window.YVYIrAlSimulador({ capital: +b.dataset.simular, moneda: "USD", financiacion: b.dataset.tipo === "terminado" ? "contado" : "cuotas" });
-    });
+    };
+    if (listaProy) {
+      const pintarProyectos = filtro => {
+        listaProy.innerHTML = PROYECTOS.filter(p => filtro === "todos" || p.tipo === filtro).map(fichaProyecto).join("");
+        pintarPrecios(listaProy);
+      };
+      pintarProyectos("todos");
+      $$("[data-filtro]").forEach(ch => ch.addEventListener("click", () => {
+        $$("[data-filtro]").forEach(c => c.setAttribute("aria-pressed", c === ch));
+        pintarProyectos(ch.dataset.filtro);
+      }));
+      listaProy.addEventListener("click", alSimular);
+    }
+    if (listaDes) {
+      // Tres fichas (una fila completa); el resto, en la página Proyectos
+      listaDes.innerHTML = PROYECTOS.filter(p => p.tipo !== "terminado").slice(0, 3).map(fichaProyecto).join("");
+      pintarPrecios(listaDes);
+      listaDes.addEventListener("click", alSimular);
+    }
+  }
+
+  /* ---------- Inicio: calculadora de plusvalía ---------- */
+  // Revalorización a 3 y 5 años, escenario prudente y optimista, con los supuestos de js/scoring.js
+  const calc = $("#calc");
+  if (calc && S) {
+    const monto = $("#calc-monto"), res = $("#calc-res");
+    const SUPUESTO = {
+      lote: "lote, del 4 al 9 % anual.",
+      pozo: "sobre plano, del 8 al 15 % a la entrega (obra de 2 años) y después del 3 al 5 % anual.",
+      terminado: "terminado, del 2,5 al 4 % anual."
+    };
+    const ESCALA = 60; // % de ganancia que llena la barra
+    const tipo = () => $("[name=calc-tipo]:checked", calc).value;
+    const usd = v => `<span data-precio-usd="${Math.round(v)}">US$ ${num(v)}</span>`;
+    function calcular() {
+      const t = tipo(), m = +monto.value;
+      $("#calc-monto-txt").innerHTML = usd(m);
+      monto.setAttribute("aria-valuetext", "US$ " + num(m));
+      res.innerHTML = [3, 5].map(anios => {
+        const { prudente, optimista } = S.apreciacion(t, m, anios);
+        const pct = v => Math.round((v / m - 1) * 100);
+        const ancho = v => Math.min(100, pct(v) / ESCALA * 100);
+        return `
+          <div class="calc__plazo">
+            <small>En ${anios} años</small>
+            <b>${usd(prudente)} – ${usd(optimista)}</b>
+            <span>Ganancia estimada: <i class="sin-corte">+${usd(prudente - m)}</i> a <i class="sin-corte">+${usd(optimista - m)}</i> <i class="sin-corte">(${pct(prudente)}–${pct(optimista)} %)</i></span>
+            <i class="calc__barra" aria-hidden="true"><i style="left:${ancho(prudente)}%;width:${ancho(optimista) - ancho(prudente)}%"></i></i>
+          </div>`;
+      }).join("");
+      $("#calc-supuesto").textContent = "Plusvalía supuesta para un " + SUPUESTO[t];
+      pintarPrecios(calc);
+    }
+    calc.addEventListener("input", calcular);
+    calcular();
+    $("#calc-simular").addEventListener("click", () => window.YVYIrAlSimulador({
+      capital: +monto.value, moneda: "USD", objetivo: "plusvalia", financiacion: tipo() === "terminado" ? "contado" : "cuotas"
+    }));
   }
 
   /* ---------- Guía por país (pestañas) ---------- */
@@ -472,14 +504,23 @@
 
   /* ---------- Formulario de contacto ---------- */
   // En Inicio, "Propiedad de interés" suma cada casa de la cartera; ?interes=<id> la deja elegida
+  // (y antes, cada lote y desarrollo de js/proyectos-data.js)
   const selCartera = $("[data-cartera]");
-  if (selCartera && window.YVY_CASAS) {
-    const grupo = document.createElement("optgroup");
-    grupo.label = "Residencias en San Bernardino";
-    YVY_CASAS.forEach(c => grupo.appendChild(new Option(c.nombre + " · " + c.zona, c.nombre, false, false)));
-    selCartera.appendChild(grupo);
-    const pedida = YVY_CASAS.find(c => c.id === new URLSearchParams(location.search).get("interes"));
-    if (pedida) selCartera.value = pedida.nombre;
+  if (selCartera) {
+    const grupos = [
+      ["Lotes y desarrollos", window.YVY_PROYECTOS || [], p => p.loc],
+      ["Residencias en San Bernardino", window.YVY_CASAS || [], c => c.zona]
+    ];
+    const pedido = new URLSearchParams(location.search).get("interes");
+    grupos.forEach(([titulo, lista, lugar]) => {
+      if (!lista.length) return;
+      const grupo = document.createElement("optgroup");
+      grupo.label = titulo;
+      lista.forEach(x => grupo.appendChild(new Option(x.nombre + " · " + lugar(x), x.nombre, false, false)));
+      selCartera.appendChild(grupo);
+      const elegido = lista.find(x => x.id === pedido);
+      if (elegido) selCartera.value = elegido.nombre;
+    });
   }
   const formContacto = $("#form-contacto");
   if (formContacto) formContacto.addEventListener("submit", async e => {
@@ -710,7 +751,7 @@
   }
 
   /* ---------- Aparición suave de las secciones ---------- */
-  const animables = $$(".pagina-cab__txt > *, .cabecera, .cifras, .diez, .sanber > *, .pr-barra, .pr-grid, .proyectos, .sim > *, .legal, .tabs, .servicios, .equipo, .faq, .contacto > *, .dest, .accesos > *, .cta-final");
+  const animables = $$(".pagina-cab__txt > *, .cabecera, .cifras, .diez, .sanber > *, .pr-barra, .pr-grid, .proyectos, .sim > *, .legal, .tabs, .servicios, .equipo, .faq, .contacto > *, .dest, .accesos > *, .cta-final, .razones, .calc > *, .camino, .garantias");
   if ("IntersectionObserver" in window && !quieto) {
     const io = new IntersectionObserver(entradas => entradas.forEach(en => {
       if (en.isIntersecting) { en.target.classList.add("visto"); io.unobserve(en.target); }

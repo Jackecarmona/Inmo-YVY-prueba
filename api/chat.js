@@ -9,15 +9,19 @@ const MODELO = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:fr
 const SITIO = process.env.SITE_URL || "https://yvy-three.vercel.app";
 const MAX_MENSAJES = 16, MAX_CARACTERES = 800, LIMITE_MS = 25000;
 
-// Cartera de casas: el mismo archivo que usa la web (js/propiedades-data.js), leído una vez
-let cartera = null;
+// Cartera: los mismos archivos que usa la web (js/propiedades-data.js y js/proyectos-data.js), leídos una vez
+const leerDatos = archivo => {
+  const caja = { window: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(process.cwd(), "js", archivo), "utf8"), caja);
+  return caja.window;
+};
+const usd = n => "US$ " + n.toLocaleString("es-PY");
+let cartera = null, proyectos = null;
 function leerCartera() {
   if (cartera !== null) return cartera;
   try {
-    const caja = { window: {} };
-    vm.runInNewContext(fs.readFileSync(path.join(process.cwd(), "js", "propiedades-data.js"), "utf8"), caja);
-    cartera = (caja.window.YVY_CASAS || []).map(c => [
-      `- ${c.nombre} (${c.zona}, San Bernardino): ${c.precio ? "US$ " + c.precio.toLocaleString("es-PY") : "precio a consultar"}`,
+    cartera = (leerDatos("propiedades-data.js").YVY_CASAS || []).map(c => [
+      `- ${c.nombre} (${c.zona}, San Bernardino): ${c.precio ? usd(c.precio) : "precio a consultar"}`,
       `${c.estado || ""}, ${c.construido || "?"} m² construidos, terreno ${c.terreno || "?"} m², ${c.dorm || "?"} dormitorios, ${c.banos || "?"} baños.`,
       c.resumen || ""
     ].join(" ")).join("\n");
@@ -27,15 +31,33 @@ function leerCartera() {
   }
   return cartera;
 }
+function leerProyectos() {
+  if (proyectos !== null) return proyectos;
+  const TIPO = { lote: "lote", pozo: "sobre plano", terminado: "terminado" };
+  try {
+    proyectos = (leerDatos("proyectos-data.js").YVY_PROYECTOS || []).map(p =>
+      `- ${p.nombre} (${TIPO[p.tipo]}, ${p.loc}): precio total ${usd(p.precio)}, entrega inicial ${p.anticipo >= p.precio ? "contado" : usd(p.anticipo)} (${p.cuotas}), ` +
+      `plusvalía estimada ${p.plusvalia}, estado ${p.estado === "pozo" ? "en pozo" : "listo para titular"}. ${p.specs.map(s => s.join(" ")).join(", ")}.`
+    ).join("\n");
+  } catch (e) {
+    console.error("No se pudieron leer los proyectos:", e.message);
+    proyectos = "";
+  }
+  return proyectos;
+}
 
 const instrucciones = () => `Sos el asistente virtual de YVY Capital, una inmobiliaria que ayuda a inversores de España, Argentina y Brasil a invertir en Paraguay.
 Respondé siempre en español rioplatense (voseo), con calidez y en pocas frases: como máximo 120 palabras. Sin tablas ni encabezados.
 
-Lo que ofrece YVY Capital:
+Lo que ofrece YVY Capital (el foco está en inversores):
+- Lotes y desarrollos de alta plusvalía en San Bernardino y Asunción: se entra desde el 10 % y el resto se paga en cuotas al promotor, sin banco. Plusvalía estimada: lotes 4–9 % anual; sobre plano 8–15 % a la entrega y luego 3–5 % anual; terminados 2,5–4 % anual (orientativa, no garantizada). En la portada hay una calculadora de plusvalía a 3 y 5 años.
+- Compra desde el exterior en 3 pasos: elegir el lote (por videollamada, con plano y situación del título), reservar con firma a distancia y pago inicial, y escritura ante escribano público inscripta en el Registro Público a nombre del comprador (en persona o con poder notarial).
 - Residencias en San Bernardino, frente al Lago Ypacaraí (la cartera está abajo).
-- Departamentos sobre plano en Asunción y lotes en San Bernardino: se entra con el 10 % y el resto se paga en cuotas al promotor, sin banco. Detalle en la página Proyectos.
 - Datos generales: precio medio en Asunción de 1.697 US$/m² (marzo 2025); impuesto efectivo sobre el alquiler del 4 % (régimen 10-10-10); libre repatriación de ganancias; se puede comprar sin viajar, con pasaporte y poder notarial; renta temporal estimada del 8 al 12 % en dólares (orientativa, no garantizada).
 - En la web hay un simulador de inversión que arma una propuesta en PDF.
+
+Lotes y desarrollos (ejemplos de la web):
+${leerProyectos() || "(no disponible: invitá a ver la página Proyectos)"}
 
 Cartera de residencias en San Bernardino:
 ${leerCartera() || "(no disponible: invitá a ver la página Propiedades)"}
