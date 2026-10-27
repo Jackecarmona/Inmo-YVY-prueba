@@ -113,6 +113,23 @@ Gana la de mayor puntaje y se proyectan dos escenarios (prudente y optimista) co
 gastos de compra 3,5 %, IRP efectivo 4 % del alquiler, vacancia, gestión y plusvalía.
 Como mejora futura se puede entrenar un clasificador real (por ejemplo, un árbol de decisión) con los datos que se vayan guardando en Supabase.
 
+## Asistente con IA (OpenRouter)
+
+El chat del botón dorado combina dos cosas:
+
+- **Preguntas guiadas** (país, capital, objetivo, riesgo) que dan la recomendación de `scoring.js` y, con permiso, guardan la consulta en el panel (origen «Chatbot»). No usan IA.
+- **Preguntas libres**: lo que la persona escribe fuera de esas preguntas lo responde un modelo de lenguaje por medio de la función serverless `api/chat.js` (Vercel), que llama a OpenRouter.
+
+`api/chat.js` agrega siempre las instrucciones y la cartera de `js/propiedades-data.js`, recorta el historial (16 mensajes, 800 caracteres cada uno), solo acepta pedidos de la propia web y limita a 30 preguntas cada 10 minutos por IP. A la IA solo se le envía la charla libre: nunca el nombre ni el contacto del flujo guiado. Si la IA falla, el chat ofrece WhatsApp.
+
+Configuración (una vez):
+
+1. En [openrouter.ai/keys](https://openrouter.ai/keys), crear una clave (`sk-or-v1-…`).
+2. En Vercel → el proyecto → **Settings → Environment Variables**, agregar `OPENROUTER_API_KEY` con esa clave, marcando Production, Preview y Development.
+3. Volver a desplegar (Deployments → ⋯ → Redeploy): las variables nuevas no se aplican a despliegues anteriores.
+
+Opcionales: `OPENROUTER_MODEL` (por defecto `nvidia/nemotron-3-super-120b-a12b:free`) y `SITE_URL` (cabecera `HTTP-Referer`). Para probarlo en la computadora: copiar `.env.example` como `.env` (no se sube a GitHub) y usar `vercel dev`; con el servidor estático simple el chat muestra el aviso de WhatsApp.
+
 ## Antes de publicar
 
 - Cambiar en `js/config.js` el número de WhatsApp, el canal de Telegram, el email y los datos del equipo de demo.

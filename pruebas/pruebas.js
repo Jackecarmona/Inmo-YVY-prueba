@@ -761,6 +761,35 @@
     d.getElementById("chat-reiniciar").click(); await espera(100);
     igual(d.querySelectorAll("#chat-log .msg").length, 1, "mensajes después de reiniciar");
   });
+  // La IA responde por api/chat.js (Vercel); aquí se simula esa respuesta reemplazando fetch en la página
+  prueba("Formularios", "Chat con IA: responde preguntas libres, muestra «escribiendo» y solo envía la charla libre", async () => {
+    limpiar();
+    const { d, w } = await abrir("propiedades/index.html");
+    const enviados = [];
+    let responder;
+    w.fetch = (url, op) => { enviados.push({ url: String(url), cuerpo: JSON.parse(op.body) }); return new Promise(r => { responder = r; }); };
+    d.getElementById("bot-btn").click(); await espera(100);
+    [...d.querySelectorAll("#chat-ops button")].find(b => b.textContent === "España").click(); await espera(450);
+    afirmar(!d.getElementById("chat-input").hidden, "el campo para preguntar está oculto");
+    escribir(d.getElementById("chat-txt"), "¿Cuánto cuesta Horizon Home?");
+    d.getElementById("chat-input").requestSubmit();
+    await hasta(() => d.querySelector(".msg--escribiendo"), "indicador «escribiendo»");
+    afirmar(/api\/chat$/.test(enviados[0].url), "dirección: " + enviados[0].url);
+    igual(JSON.stringify(enviados[0].cuerpo.messages), JSON.stringify([{ role: "user", content: "¿Cuánto cuesta Horizon Home?" }]), "historial enviado");
+    responder(new w.Response(JSON.stringify({ respuesta: "Cuesta **US$ 360.000**.\n<img src=x onerror=alert(1)>" }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    await hasta(() => !d.querySelector(".msg--escribiendo"), "fin de «escribiendo»");
+    const ultimo = [...d.querySelectorAll("#chat-log .msg--bot")].pop();
+    igual(ultimo.querySelector("b").textContent, "US$ 360.000", "negrita");
+    afirmar(!ultimo.querySelector("img") && /&lt;img|<img/.test(ultimo.textContent), "el HTML de la IA no se escapó");
+    afirmar([...d.querySelectorAll("#chat-ops button")].some(b => b.textContent === "Que me contacte un asesor"), "falta «Que me contacte un asesor»");
+    // La segunda pregunta lleva el historial de la charla libre (pregunta y respuesta), sin la respuesta «España» del test
+    w.fetch = (url, op) => { enviados.push({ cuerpo: JSON.parse(op.body) }); return Promise.resolve(new w.Response("{}", { status: 502 })); };
+    escribir(d.getElementById("chat-txt"), "¿Y la Suiza?"); d.getElementById("chat-input").requestSubmit();
+    await hasta(() => /WhatsApp/.test([...d.querySelectorAll("#chat-log .msg--bot")].pop().textContent), "aviso con WhatsApp al fallar");
+    igual(enviados[1].cuerpo.messages.map(m => m.role).join(","), "user,assistant,user", "historial de la segunda pregunta");
+    afirmar(!JSON.stringify(enviados).includes("España"), "se envió una respuesta del test guiado");
+    afirmar(!d.getElementById("chat-txt").disabled, "el campo quedó bloqueado");
+  });
 
   /* =====================================================================
      7. COOKIES, MONEDA, BUSCADOR

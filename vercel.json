@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "api/chat.js": { "maxDuration": 30, "includeFiles": "js/propiedades-data.js" }
+  },
   "redirects": [
     { "source": "/login", "destination": "/ingresar/", "permanent": false },
     { "source": "/backoffice", "destination": "/ingresar/", "permanent": false }

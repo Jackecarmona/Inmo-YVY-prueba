@@ -502,9 +502,11 @@
     $("#c-ok").hidden = false;
   });
 
-  /* ---------- Chatbot de cualificación (con memoria) ---------- */
+  /* ---------- Chatbot de cualificación (con memoria) + preguntas libres con IA ---------- */
   // La conversación se guarda en sessionStorage durante la visita (necesario para seguirla al cambiar de página)
   // y, si el visitante aceptó las cookies de preferencias, también en localStorage durante 30 días.
+  // Lo que se escribe fuera de las preguntas guiadas lo responde la IA (api/chat.js, OpenRouter).
+  // A la IA solo se le envían esas preguntas y respuestas (marcadas con "ia"), nunca el nombre ni el contacto.
   const chat = $("#chat");
   if (chat) {
     const log = $("#chat-log"), ops = $("#chat-ops"), inForm = $("#chat-input"), inTxt = $("#chat-txt"), botBtn = $("#bot-btn");
@@ -542,15 +544,18 @@
       log.appendChild(m);
       log.scrollTop = log.scrollHeight;
     };
-    // Al restaurar, los mensajes del bot ya están en el historial: solo se vuelve a mostrar la pregunta
-    const decir = (txt, quien = "bot") => {
+    // Al restaurar, los mensajes del bot ya están en el historial: solo se vuelve a mostrar la pregunta.
+    // "plano" (texto sin HTML) marca los mensajes de la charla con la IA, que se le reenvían como historial.
+    const decir = (txt, quien = "bot", plano) => {
       if (restaurando && quien === "bot") return;
       pintarMensaje(txt, quien);
-      estado.mensajes.push({ q: quien, t: txt });
+      estado.mensajes.push(plano === undefined ? { q: quien, t: txt } : { q: quien, t: txt, ia: true, p: plano });
       guardarChat();
     };
+    const AYUDA_TXT = "Escribí tu pregunta…";
     const opciones = lista => {
-      inForm.hidden = true;
+      // El campo de texto queda siempre disponible para preguntarle a la IA
+      inForm.hidden = false; inTxt.placeholder = AYUDA_TXT; esperando = null;
       ops.innerHTML = "";
       lista.forEach(([txt, fn]) => {
         const b = document.createElement("button");
@@ -563,11 +568,53 @@
     inForm.addEventListener("submit", e => {
       e.preventDefault();
       const v = inTxt.value.trim();
-      if (!v || !esperando) return;
+      if (!v || pensando) return;
+      inTxt.value = "";
+      if (!esperando) return preguntarIA(v);
       decir(esc(v), "yo");
-      const fn = esperando; esperando = null; inForm.hidden = true;
+      const fn = esperando; esperando = null; inTxt.placeholder = AYUDA_TXT;
       setTimeout(() => fn(v), 350);
     });
+
+    /* Preguntas libres: las responde la IA a través de api/chat.js */
+    let pensando = false;
+    const API_CHAT = new URL(B + "api/chat", document.baseURI).href;
+    // Texto de la IA a HTML seguro: se escapa todo y solo se permiten **negritas** y saltos de línea
+    const formatearIA = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+    const BOTON_ASESOR = "Que me contacte un asesor";
+    const ofrecerAsesor = () => {
+      if (perfil().guardado || ["permiso", "nombre", "contacto"].includes(estado.paso)) return;
+      if ([...ops.children].some(b => b.textContent === BOTON_ASESOR)) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = BOTON_ASESOR;
+      b.addEventListener("click", () => { decir(esc(BOTON_ASESOR), "yo"); ops.innerHTML = ""; setTimeout(() => ir("permiso"), 350); });
+      ops.appendChild(b);
+    };
+    async function preguntarIA(pregunta) {
+      decir(esc(pregunta), "yo", pregunta);
+      const historial = estado.mensajes.filter(m => m.ia).slice(-12).map(m => ({ role: m.q === "yo" ? "user" : "assistant", content: m.p }));
+      pensando = true; inTxt.disabled = true;
+      const escribiendo = document.createElement("div");
+      escribiendo.className = "msg msg--bot msg--escribiendo";
+      escribiendo.setAttribute("aria-label", "El asistente está escribiendo");
+      escribiendo.innerHTML = "<span></span><span></span><span></span>";
+      log.appendChild(escribiendo); log.scrollTop = log.scrollHeight;
+      try {
+        const r = await fetch(API_CHAT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: historial }) });
+        const datos = await r.json().catch(() => ({}));
+        if (!r.ok || !datos.respuesta) throw new Error(datos.error || "sin respuesta");
+        escribiendo.remove();
+        decir(formatearIA(datos.respuesta), "bot", datos.respuesta);
+      } catch (ex) {
+        escribiendo.remove();
+        // El error no entra al historial de la IA: así la próxima pregunta no arrastra el fallo
+        decir(`${esc(ex.message && ex.message !== "Failed to fetch" && ex.message !== "sin respuesta" ? ex.message : "No pude responder ahora.")} Si querés, <a href="${waLink("Hola YVY Capital, tengo una consulta: " + pregunta)}" target="_blank" rel="noopener">escribinos por WhatsApp</a>.`);
+      } finally {
+        pensando = false; inTxt.disabled = false;
+        if (!chat.hidden) inTxt.focus();
+        ofrecerAsesor();
+      }
+    }
     // Los enlaces se guardan con dirección completa para que funcionen desde cualquier página
     const enlace = ruta => new URL(B + ruta, document.baseURI).href;
 
@@ -575,7 +622,7 @@
     const ir = paso => { estado.paso = paso; guardarChat(); flujo[paso](); };
     const flujo = {
       inicio() {
-        decir("Hola, soy el asistente de YVY Capital. Con 4 preguntas te digo qué tipo de inversión encaja con vos. ¿Desde dónde invertirías?");
+        decir("Hola, soy el asistente de YVY Capital. Escribime cualquier pregunta sobre las propiedades o sobre invertir en Paraguay. O, con 4 preguntas, te digo qué tipo de inversión encaja con vos: ¿desde dónde invertirías?");
         opciones(["España", "Argentina", "Brasil", "Otro país"].map(p => [p, () => { perfil().pais = p === "Otro país" ? "Otro" : p; ir("capital"); }]));
       },
       capital() {
@@ -633,7 +680,7 @@
 
     function reiniciar() {
       borrarChat();
-      log.innerHTML = ""; ops.innerHTML = ""; inForm.hidden = true; esperando = null;
+      log.innerHTML = ""; ops.innerHTML = ""; esperando = null;
       estado = nuevoEstado();
       ir("inicio");
     }
