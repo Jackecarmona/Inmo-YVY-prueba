@@ -718,24 +718,14 @@
     animables.forEach(el => { el.classList.add("rv"); io.observe(el); });
   }
 
-  /* ---------- Sesión: saludo en el menú y datos precargados ---------- */
+  /* ---------- Sesión: datos precargados ---------- */
+  // La web pública no muestra ningún enlace al panel, ni siquiera con la sesión del equipo abierta:
+  // el equipo entra escribiendo /admin. Los favoritos solo se ven con una sesión (.con-sesion).
   DB.rolActual().then(async rol => {
     if (!rol) return;
-    // Sin sesión la web es solo para captar consultas: el enlace al panel y los favoritos
-    // quedan ocultos y aparecen recién acá, cuando hay alguien con la sesión abierta.
     document.documentElement.classList.add("con-sesion");
-    const nav = $("#nav-cliente"), enlace = $("#nav-cliente span");
-    if (nav) nav.hidden = false;
-    if (rol === "equipo") {
-      if (nav) nav.href = B + "admin/index.html";
-      if (enlace) enlace.textContent = "Panel del equipo";
-      return;
-    }
-    if (nav) nav.href = B + "cliente/index.html";
+    if (rol === "equipo") return;
     const c = await DB.clienteActual();
-    if (enlace) enlace.textContent = c && c.nombre ? "Hola, " + c.nombre.split(" ")[0] : "Mi cuenta";
-    if (nav) nav.setAttribute("aria-label", "Mi cuenta" + (c && c.nombre ? " de " + c.nombre : ""));
-    if (nav && document.body.dataset.pagina === "cliente") nav.setAttribute("aria-current", "page");
     if (form && c) {
       if (!$("#nombre").value && c.nombre) $("#nombre").value = c.nombre;
       if (!$("#email").value) $("#email").value = c.email;

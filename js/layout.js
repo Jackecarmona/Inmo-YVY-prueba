@@ -27,15 +27,14 @@
 
   const sprite = `
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
       <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.7-.3-1.4-.7-2-1.3-.6-.5-1-1.1-1.4-1.8-.1-.2 0-.4.1-.5l.4-.5.3-.4v-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.4-.9 2.2.1 1 .5 1.9 1 2.7 1.1 1.6 2.5 2.9 4.2 3.7.5.2.9.4 1.4.5.5.2 1.1.2 1.6.1.6-.1 1.2-.5 1.5-1 .2-.4.2-.8.1-1.1l-.4-.2Z"/></symbol>
       <symbol id="i-tg" viewBox="0 0 24 24"><path fill="currentColor" d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9L1.8 12c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4.9Z"/></symbol>
       <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4V5Z"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M8 9.5h8M8 12.5h5"/></symbol>
       <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     </defs></svg>`;
 
-  // La web pública no muestra ningún acceso al login: el equipo entra por /admin (o /login, /backoffice).
-  // El enlace "Mi cuenta" del menú solo aparece si ya hay una sesión abierta (js/app.js).
+  // La web pública no muestra ningún acceso al login ni al panel, ni siquiera con la sesión abierta:
+  // el equipo entra por /admin (o /login, /backoffice).
   // El botón principal lleva al formulario de solicitud: el de Inicio, o el de Nosotros si estás ahí.
   const CTA = pagina === "inicio" ? "#solicitar" : pagina === "nosotros" ? "#contacto" : B + "index.html#solicitar";
 
@@ -49,7 +48,6 @@
         <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav">Menú</button>
         <nav class="nav" id="nav">
           ${NAV.map(([id, href, txt]) => `<a href="${B}${href}"${id === pagina ? ' aria-current="page"' : ""}>${txt}</a>`).join("")}
-          <a class="nav__cliente" href="${B}cliente/index.html" id="nav-cliente" hidden><svg><use href="#i-user"/></svg><span>Mi cuenta</span></a>
           <a class="btn btn--oro" href="${CTA}">Solicitar información</a>
         </nav>
       </div>

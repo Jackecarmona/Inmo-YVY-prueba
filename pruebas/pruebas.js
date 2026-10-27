@@ -607,21 +607,16 @@
     await hasta(() => /Dúplex en Asunción/.test(d.getElementById("lista-favs").textContent), "el favorito del Back Office");
   });
 
-  prueba("Área de clientes", "«Hola, Ana» en el menú lleva a «Mi cuenta» sin perder la sesión", async () => {
+  prueba("Acceso y roles", "Con la sesión del equipo abierta, la web pública no muestra ningún enlace al panel", async () => {
     limpiar();
     let { w } = await abrir("ingresar/index.html");
-    await w.YVYDB.clienteRegistrar("Ana Prueba", "ana@prueba.com", "clave-segura-1");
-    let { d } = await abrir("propiedades/index.html");
-    const nav = () => d.getElementById("nav-cliente");
-    await hasta(() => /cliente\/index\.html$/.test(nav().getAttribute("href")) && /Hola, Ana/.test(nav().textContent), "el enlace del menú apunta a Mi cuenta");
-    let ir = navegar(); nav().click(); ({ d } = await ir);
-    igual(ruta(), "cliente/index.html", "página");
-    await hasta(() => !d.getElementById("vista-panel").hidden, "panel visible (sesión intacta)");
-    // Desde el propio panel, tocarlo otra vez tampoco cierra la sesión
-    await hasta(() => /cliente\/index\.html$/.test(nav().getAttribute("href")), "enlace dentro del panel");
-    ir = navegar(); nav().click(); ({ d } = await ir);
-    await hasta(() => !d.getElementById("vista-panel").hidden, "sigue en el panel");
-    afirmar(localStorage.getItem("yvy_cliente_demo"), "se perdió la sesión");
+    await w.YVYDB.entrar("admin@yvycapital.com", w.YVY_CONFIG.demoAdminPass);
+    for (const pagina of ["index.html", "propiedades/index.html", "nosotros/index.html"]) {
+      const { d } = await abrir(pagina);
+      await espera(400); // tiempo para que se resuelva la sesión
+      afirmar(!d.querySelector('a[href*="admin/"], a[href*="cliente/"], a[href*="ingresar/"]'), "enlace al panel en " + pagina);
+      afirmar(!/Panel del equipo|Mi cuenta/.test(d.querySelector("header").textContent), "texto del panel en el menú de " + pagina);
+    }
   });
   prueba("Acceso y roles", "Abrir Ingresar con la sesión del equipo abierta vuelve al panel", async () => {
     limpiar();
@@ -694,7 +689,7 @@
     limpiar();
     const { d } = await abrir("index.html?interes=la-suiza");
     afirmar(![...d.querySelectorAll("a")].some(a => /ingresar\//.test(a.getAttribute("href") || "") && a.offsetParent), "hay un enlace visible al login");
-    afirmar(d.getElementById("nav-cliente").hidden, "«Mi cuenta» visible sin sesión");
+    afirmar(!d.getElementById("nav-cliente"), "sigue el enlace «Mi cuenta» en el menú");
     igual(d.getElementById("c-interes").value, "Casa con vista en La Suiza", "propiedad de interés");
     escribir(d.getElementById("c-nombre"), "Marta"); escribir(d.getElementById("c-tel"), "600 111 222");
     d.getElementById("c-consentimiento").checked = true;
